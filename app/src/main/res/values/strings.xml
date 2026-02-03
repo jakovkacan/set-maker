@@ -1,3 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SetMaker</string>
+    <string name="app_name">Set Maker</string>
+    <string name="app_logo">App Logo</string>
+
+    <!-- Bottom Navigation -->
+    <string name="library">Library</string>
+    <string name="sets">Sets</string>
+    <string name="query">Query</string>
+    <string name="settings">Settings</string>
+
+    <!-- Sets -->
+    <string name="set_cover">Set Cover</string>
+
+    <!-- Library -->
+    <string name="album_cover">Album Cover</string>
+    <string name="provider_icon">Provider Icon</string>
+    <string name="pinned">Pinned</string>
+    <string name="add_song">Add Song</string>
+
+    <!-- Query -->
+    <string name="search_songs">Search songs…</string>
+
+    <!-- Editor -->
+    <string name="editor_placeholder">Editor - Coming Soon</string>
+
+    <!-- Song Options -->
+    <string name="song_options">Song Options</string>
+    <string name="add_to_set">Add to Set</string>
+    <string name="pin_song">Pin Song</string>
+    <string name="share">Share</string>
+    <string name="delete">Delete</string>
+
+    <!-- Settings -->
+    <string name="general">General</string>
+    <string name="enable_notifications">Enable Notifications</string>
+    <string name="notifications_summary">Receive updates about new songs</string>
+    <string name="theme">Theme</string>
+    <string name="theme_summary">Choose app theme</string>
+
+    <string name="playback">Playback</string>
+    <string name="default_volume">Default Volume</string>
+    <string name="autoplay">Autoplay</string>
+    <string name="autoplay_summary">Automatically play next song</string>
+
+    <string name="auto_import">Auto Import</string>
+    <string name="auto_import_summary">Automatically import new songs</string>
+    <string name="cache_size">Cache Size</string>
+    <string name="cache_size_summary">Manage cached songs</string>
+
+    <string name="about">About</string>
+    <string name="version">Version</string>
+    <string name="privacy_policy">Privacy Policy</string>
+
+    <string-array name="theme_entries">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>System Default</item>
+    </string-array>
+
+    <string-array name="theme_values">
+        <item>light</item>
+        <item>dark</item>
+        <item>system</item>
+    </string-array>
 </resources>

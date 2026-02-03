@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+.ragmate.env
+compose.yml
+docker_data/

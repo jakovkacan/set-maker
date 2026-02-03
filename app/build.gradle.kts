@@ -35,15 +35,35 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+
+    // Navigation
+    implementation("androidx.navigation:navigation-fragment-ktx:2.9.7")
+    implementation("androidx.navigation:navigation-ui-ktx:2.9.7")
+
+    // ViewPager2
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
+
+    // RecyclerView
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
+
+    // CardView
+    implementation("androidx.cardview:cardview:1.0.0")
+
+    // Preferences
+    implementation("androidx.preference:preference-ktx:1.2.1")
+
+    // Image Loading (Optional - uncomment if needed)
+    // implementation("com.github.bumptech.glide:glide:4.16.0")
+    // implementation("com.squareup.picasso:picasso:2.8")
 }

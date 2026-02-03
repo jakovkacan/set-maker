@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/song_options"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_primary"
+        android:paddingBottom="16dp" />
+
+    <TextView
+        android:id="@+id/option_add_to_set"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/add_to_set"
+        android:textSize="16sp"
+        android:textColor="@color/text_primary"
+        android:padding="16dp"
+        android:drawableStart="@drawable/ic_add"
+        android:drawablePadding="16dp"
+        android:background="?attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/option_pin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/pin_song"
+        android:textSize="16sp"
+        android:textColor="@color/text_primary"
+        android:padding="16dp"
+        android:drawableStart="@drawable/ic_pin"
+        android:drawablePadding="16dp"
+        android:background="?attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/option_share"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/share"
+        android:textSize="16sp"
+        android:textColor="@color/text_primary"
+        android:padding="16dp"
+        android:drawableStart="@drawable/ic_share"
+        android:drawablePadding="16dp"
+        android:background="?attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/option_delete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/delete"
+        android:textSize="16sp"
+        android:textColor="@color/error"
+        android:padding="16dp"
+        android:drawableStart="@drawable/ic_delete"
+        android:drawablePadding="16dp"
+        android:background="?attr/selectableItemBackground" />
+
+</LinearLayout>
