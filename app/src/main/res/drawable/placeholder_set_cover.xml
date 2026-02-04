@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background Color -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/background" />
+<!--            <corners android:topLeftRadius="16px" android:topRightRadius="16px" />-->
+        </shape>
+    </item>
+
+    <!-- Centered Icon -->
+    <item>
+        <inset
+            android:inset="20dp"
+            android:drawable="@drawable/ic_disc"
+            android:tint="@color/white" />
+    </item>
+</layer-list>

@@ -6,7 +6,7 @@
     <!-- Bottom Navigation -->
     <string name="library">Library</string>
     <string name="sets">Sets</string>
-    <string name="query">Query</string>
+    <string name="query">Search</string>
     <string name="settings">Settings</string>
 
     <!-- Sets -->
@@ -51,16 +51,4 @@
     <string name="about">About</string>
     <string name="version">Version</string>
     <string name="privacy_policy">Privacy Policy</string>
-
-    <string-array name="theme_entries">
-        <item>Light</item>
-        <item>Dark</item>
-        <item>System Default</item>
-    </string-array>
-
-    <string-array name="theme_values">
-        <item>light</item>
-        <item>dark</item>
-        <item>system</item>
-    </string-array>
 </resources>

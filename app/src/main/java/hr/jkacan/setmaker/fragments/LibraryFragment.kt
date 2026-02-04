@@ -62,10 +62,10 @@ class LibraryFragment : Fragment() {
         return listOf(
             Song(
                 1,
-                "Blinding Lights",
-                "The Weeknd",
+                "Fog",
+                "COMPUTERDATA",
                 "After Hours",
-                "cover1",
+                "https://f4.bcbits.com/img/a2537338351_10.jpg",
                 SongProvider.SPOTIFY,
                 false
             ),
@@ -74,7 +74,7 @@ class LibraryFragment : Fragment() {
                 "Levitating",
                 "Dua Lipa",
                 "Future Nostalgia",
-                "cover2",
+                null,
                 SongProvider.SPOTIFY,
                 true
             ),
@@ -83,7 +83,7 @@ class LibraryFragment : Fragment() {
                 "Heat Waves",
                 "Glass Animals",
                 "Dreamland",
-                "cover3",
+                null,
                 SongProvider.SOUNDCLOUD,
                 false
             ),
@@ -92,7 +92,7 @@ class LibraryFragment : Fragment() {
                 "Astronaut In The Ocean",
                 "Masked Wolf",
                 "Single",
-                "cover4",
+                null,
                 SongProvider.LOCAL,
                 true
             ),
@@ -101,7 +101,7 @@ class LibraryFragment : Fragment() {
                 "Save Your Tears",
                 "The Weeknd",
                 "After Hours",
-                "cover5",
+                null,
                 SongProvider.SPOTIFY,
                 false
             )

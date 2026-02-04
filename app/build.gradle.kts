@@ -5,14 +5,12 @@ plugins {
 
 android {
     namespace = "hr.jkacan.setmaker"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "hr.jkacan.setmaker"
         minSdk = 27
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -48,22 +46,21 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
 
     // Navigation
-    implementation("androidx.navigation:navigation-fragment-ktx:2.9.7")
-    implementation("androidx.navigation:navigation-ui-ktx:2.9.7")
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
 
     // ViewPager2
-    implementation("androidx.viewpager2:viewpager2:1.1.0")
+    implementation(libs.androidx.viewpager2)
 
     // RecyclerView
-    implementation("androidx.recyclerview:recyclerview:1.4.0")
+    implementation(libs.androidx.recyclerview)
 
     // CardView
-    implementation("androidx.cardview:cardview:1.0.0")
+    implementation(libs.androidx.cardview)
 
     // Preferences
-    implementation("androidx.preference:preference-ktx:1.2.1")
+    implementation(libs.androidx.preference.ktx)
 
-    // Image Loading (Optional - uncomment if needed)
-    // implementation("com.github.bumptech.glide:glide:4.16.0")
-    // implementation("com.squareup.picasso:picasso:2.8")
+    // Image Loading
+    implementation(libs.coil)
 }

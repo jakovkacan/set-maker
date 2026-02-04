@@ -1,9 +1,28 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.SetMaker" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+<resources>
+    <!-- Base Dark Theme -->
+<!--    <style name="Theme.SetMaker.Base" parent="Theme.MaterialComponents.DayNight.NoActionBar">-->
+<!--        <item name="android:windowBackground">@color/background</item>-->
+<!--        <item name="android:textColorPrimary">@color/text_primary</item>-->
+<!--    </style>-->
+
+    <!-- Red Theme (Default) -->
+    <style name="Theme.SetMaker.Red" parent="AppTheme">
+        <item name="primaryColor">@color/colorRed</item>
+        <item name="primaryDarkColor">@color/colorRedDark</item>
+        <item name="accentColor">@color/colorRedAccent</item>
     </style>
 
-    <style name="Theme.SetMaker" parent="Base.Theme.SetMaker" />
+    <!-- Cyan Theme -->
+    <style name="Theme.SetMaker.Cyan" parent="AppTheme">
+        <item name="primaryColor">@color/colorCyan</item>
+        <item name="primaryDarkColor">@color/colorCyanDark</item>
+        <item name="accentColor">@color/colorCyanAccent</item>
+    </style>
+
+    <!-- Purple Theme -->
+    <style name="Theme.SetMaker.Purple" parent="AppTheme">
+        <item name="primaryColor">@color/colorPurple</item>
+        <item name="primaryDarkColor">@color/colorPurpleDark</item>
+        <item name="accentColor">@color/colorPurpleAccent</item>
+    </style>
 </resources>

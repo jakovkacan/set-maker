@@ -1,0 +1,5 @@
+<resources>
+    <attr name="primaryColor" format="color" />
+    <attr name="primaryDarkColor" format="color" />
+    <attr name="accentColor" format="color" />
+</resources>

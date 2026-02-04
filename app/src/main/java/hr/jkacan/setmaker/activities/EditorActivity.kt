@@ -2,26 +2,45 @@ package hr.jkacan.setmaker.activities
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import hr.jkacan.setmaker.R
+import hr.jkacan.setmaker.databinding.ActivityEditorBinding // Auto-generated
+import hr.jkacan.setmaker.utils.ThemeHelper
 
 class EditorActivity : AppCompatActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_editor)
+    private lateinit var binding: ActivityEditorBinding
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        ThemeHelper.applyTheme(this)
+        super.onCreate(savedInstanceState)
+
+        // Initialize View Binding
+        binding = ActivityEditorBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+//        setSupportActionBar(binding.toolbar) // Assuming you have a toolbar in XML
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Editor"
 
         // Get set information from intent
         val setId = intent.getIntExtra("SET_ID", -1)
         val setName = intent.getStringExtra("SET_NAME")
 
-        // TODO: Implement editor functionality
+        supportActionBar?.title = "Editing: $setName"
+
+        if (setId == -1) {
+            // Handle error or new set creation
+        }
+
+        setupEditor()
+    }
+
+    private fun setupEditor() {
+        // Example: If you use ViewPager2 for different edit modes
+        // val adapter = EditorPagerAdapter(this)
+        // binding.viewPager.adapter = adapter
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
+        onBackPressedDispatcher.onBackPressed() // Modern way to handle back
         return true
     }
 }

@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
+import coil.transform.RoundedCornersTransformation
 import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.models.Song
 import hr.jkacan.setmaker.models.SongProvider
@@ -64,7 +66,15 @@ class SongAdapter(
         holder.pinIcon.visibility = if (song.isPinned) View.VISIBLE else View.GONE
 
         // Load cover image
-        // Glide.with(holder.itemView.context).load(song.coverUrl).into(holder.coverImage)
+        if (song.coverUrl.isNullOrBlank()) {
+            holder.coverImage.setImageResource(R.drawable.placeholder_album_cover)
+        } else {
+            holder.coverImage.load(song.coverUrl) {
+                crossfade(true)
+                placeholder(R.drawable.placeholder_album_cover)
+                transformations(RoundedCornersTransformation(16f))
+            }
+        }
     }
 
     override fun getItemCount(): Int = songs.size

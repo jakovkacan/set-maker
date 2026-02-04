@@ -10,13 +10,13 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.activities.EditorActivity
-import hr.jkacan.setmaker.adapters.SetsAdapter
-import hr.jkacan.setmaker.models.SetItem
+import hr.jkacan.setmaker.adapters.SetAdapter
+import hr.jkacan.setmaker.models.Set
 
 class SetsFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: SetsAdapter
+    private lateinit var adapter: SetAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,7 +31,7 @@ class SetsFragment : Fragment() {
         // Sample data
         val setsList = getSampleSets()
 
-        adapter = SetsAdapter(setsList) { setItem ->
+        adapter = SetAdapter(setsList) { setItem ->
             // On click listener
             val intent = Intent(activity, EditorActivity::class.java)
             intent.putExtra("SET_ID", setItem.id)
@@ -44,14 +44,14 @@ class SetsFragment : Fragment() {
         return view
     }
 
-    private fun getSampleSets(): List<SetItem> {
+    private fun getSampleSets(): List<Set> {
         return listOf(
-            SetItem(1, "Workout Mix", "cover_1"),
-            SetItem(2, "Chill Vibes", "cover_2"),
-            SetItem(3, "Party Hits", "cover_3"),
-            SetItem(4, "Study Session", "cover_4"),
-            SetItem(5, "Road Trip", "cover_5"),
-            SetItem(6, "Relax & Sleep", "cover_6")
+            Set(1, "sr sn", "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000d72c1fa09190a44ba099ff9a232d"),
+            Set(2, "Chill Vibes", null),
+            Set(3, "Party Hits", null),
+            Set(4, "Study Session", null),
+            Set(5, "Road Trip", null),
+            Set(6, "Relax & Sleep", null)
         )
     }
 }
