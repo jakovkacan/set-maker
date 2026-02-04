@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import hr.jkacan.setmaker.R
-import hr.jkacan.setmaker.models.Song
+import hr.jkacan.setmaker.models.song.Song
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class SongOptionsBottomSheet : BottomSheetDialogFragment() {

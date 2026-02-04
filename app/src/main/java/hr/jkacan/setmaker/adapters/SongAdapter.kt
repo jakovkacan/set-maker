@@ -9,8 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.transform.RoundedCornersTransformation
 import hr.jkacan.setmaker.R
-import hr.jkacan.setmaker.models.Song
-import hr.jkacan.setmaker.models.SongProvider
+import hr.jkacan.setmaker.models.song.Song
+import hr.jkacan.setmaker.models.song.SongProvider
 
 class SongAdapter(
     private val songs: List<Song>,
@@ -63,7 +63,7 @@ class SongAdapter(
         holder.providerIcon.setImageResource(providerIcon)
 
         // Show pin icon if pinned
-        holder.pinIcon.visibility = if (song.isPinned) View.VISIBLE else View.GONE
+//        holder.pinIcon.visibility = if (song.isPinned) View.VISIBLE else View.GONE
 
         // Load cover image
         if (song.coverUrl.isNullOrBlank()) {

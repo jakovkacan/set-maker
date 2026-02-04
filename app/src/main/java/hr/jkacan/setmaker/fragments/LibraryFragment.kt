@@ -7,17 +7,22 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.chip.Chip
 import hr.jkacan.setmaker.adapters.SongAdapter
-import hr.jkacan.setmaker.models.Song
-import hr.jkacan.setmaker.models.SongProvider
+import hr.jkacan.setmaker.models.song.Song
+import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import hr.jkacan.setmaker.activities.MainActivity
 
 class LibraryFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: SongAdapter
     private lateinit var fabAdd: FloatingActionButton
+    private lateinit var chipSpotify: Chip
+    private lateinit var chipSoundcloud: Chip
+    private lateinit var chipLocal: Chip
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,11 +33,17 @@ class LibraryFragment : Fragment() {
 
         recyclerView = view.findViewById(R.id.library_recycler_view)
         fabAdd = view.findViewById(R.id.fab_add)
+        chipSpotify = view.findViewById(R.id.chip_spotify)
+        chipSoundcloud = view.findViewById(R.id.chip_soundcloud)
+        chipLocal = view.findViewById(R.id.chip_local)
 
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        // Sample data
-        val songs = getSampleSongs()
+        // Get the SongRepository from MainActivity
+        val songRepository = (requireActivity() as MainActivity).songRepository
+
+        // Load all saved songs
+        val songs = songRepository.getAll()
 
         adapter = SongAdapter(
             songs,
@@ -46,6 +57,11 @@ class LibraryFragment : Fragment() {
 
         recyclerView.adapter = adapter
 
+        chipSpotify.setOnCheckedChangeListener { _, _ -> filterSongs(songRepository) }
+        chipSoundcloud.setOnCheckedChangeListener { _, _ -> filterSongs(songRepository) }
+        chipLocal.setOnCheckedChangeListener { _, _ -> filterSongs(songRepository) }
+
+
         fabAdd.setOnClickListener {
             // Navigate to add song
         }
@@ -53,58 +69,36 @@ class LibraryFragment : Fragment() {
         return view
     }
 
+    private fun filterSongs(songRepository: hr.jkacan.setmaker.data.dao.SongRepository) {
+        val selectedProviders = mutableListOf<SongProvider>()
+
+        if (chipSpotify.isChecked) selectedProviders.add(SongProvider.SPOTIFY)
+        if (chipSoundcloud.isChecked) selectedProviders.add(SongProvider.SOUNDCLOUD)
+        if (chipLocal.isChecked) selectedProviders.add(SongProvider.LOCAL)
+
+        val filteredSongs = if (selectedProviders.isEmpty()) {
+            songRepository.getAll()
+        } else {
+            selectedProviders.flatMap { provider ->
+                songRepository.getSongsByProvider(provider)
+            }
+        }
+
+        adapter = SongAdapter(
+            filteredSongs,
+            onItemClick = { song ->
+                // Handle song click
+            },
+            onItemLongPress = { song ->
+                showSongOptionsModal(song)
+            }
+        )
+        recyclerView.adapter = adapter
+    }
+
+
     private fun showSongOptionsModal(song: Song) {
         val modalFragment = SongOptionsBottomSheet.newInstance(song)
         modalFragment.show(parentFragmentManager, "SongOptions")
-    }
-
-    private fun getSampleSongs(): List<Song> {
-        return listOf(
-            Song(
-                1,
-                "Fog",
-                "COMPUTERDATA",
-                "After Hours",
-                "https://f4.bcbits.com/img/a2537338351_10.jpg",
-                SongProvider.SPOTIFY,
-                false
-            ),
-            Song(
-                2,
-                "Levitating",
-                "Dua Lipa",
-                "Future Nostalgia",
-                null,
-                SongProvider.SPOTIFY,
-                true
-            ),
-            Song(
-                3,
-                "Heat Waves",
-                "Glass Animals",
-                "Dreamland",
-                null,
-                SongProvider.SOUNDCLOUD,
-                false
-            ),
-            Song(
-                4,
-                "Astronaut In The Ocean",
-                "Masked Wolf",
-                "Single",
-                null,
-                SongProvider.LOCAL,
-                true
-            ),
-            Song(
-                5,
-                "Save Your Tears",
-                "The Weeknd",
-                "After Hours",
-                null,
-                SongProvider.SPOTIFY,
-                false
-            )
-        )
     }
 }

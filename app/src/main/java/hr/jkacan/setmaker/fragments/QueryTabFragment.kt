@@ -8,8 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import hr.jkacan.setmaker.adapters.SongAdapter
-import hr.jkacan.setmaker.models.Song
-import hr.jkacan.setmaker.models.SongProvider
+import hr.jkacan.setmaker.models.song.Song
+import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.R
 
 class QueryTabFragment : Fragment() {

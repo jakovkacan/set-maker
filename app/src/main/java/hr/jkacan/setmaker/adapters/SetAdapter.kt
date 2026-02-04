@@ -9,11 +9,11 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.transform.RoundedCornersTransformation
 import hr.jkacan.setmaker.R
-import hr.jkacan.setmaker.models.Set
+import hr.jkacan.setmaker.models.set.SetItem
 
 class SetAdapter(
-    private val sets: List<Set>,
-    private val onItemClick: (Set) -> Unit
+    private val sets: List<SetItem>,
+    private val onItemClick: (SetItem) -> Unit
 ) : RecyclerView.Adapter<SetAdapter.SetViewHolder>() {
 
     inner class SetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

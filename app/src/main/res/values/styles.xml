@@ -2,7 +2,7 @@
 <resources>
 
     <!-- Base application theme -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Primary brand colors -->
         <item name="colorPrimary">?attr/primaryColor</item>
         <item name="colorPrimaryVariant">?attr/primaryDarkColor</item>
@@ -26,17 +26,23 @@
         <item name="android:textColorSecondary">@color/text_secondary</item>
 
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+
+        <!-- Material 3 Color Overrides -->
+        <item name="colorSecondaryContainer">@color/darkGray</item>
+        <item name="colorOnSecondaryContainer">@color/white</item>
+        <item name="colorSurfaceVariant">@color/darkGray</item>
+        <item name="colorOnSurfaceVariant">@color/white</item>
     </style>
 
     <!-- Splash screen theme (no action bar, logo centered by layout) -->
-    <style name="SplashTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="SplashTheme" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Use solid splash color so the splash layout draws on top -->
         <item name="android:windowBackground">@color/splash_background</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
     </style>
 
-    <style name="PreferenceThemeOverlay" parent="Theme.MaterialComponents.DayNight">
+    <style name="PreferenceThemeOverlay" parent="AppTheme">
         <item name="colorAccent">?attr/accentColor</item>
         <item name="colorControlActivated">?attr/accentColor</item>
     </style>

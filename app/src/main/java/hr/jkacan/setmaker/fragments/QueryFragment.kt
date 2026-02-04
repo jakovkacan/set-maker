@@ -36,9 +36,9 @@ class QueryFragment : Fragment() {
 
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = when (position) {
-                0 -> "Spotify"
-                1 -> "SoundCloud"
-                2 -> "Local Files"
+                0 -> getString(R.string.spotify)
+                1 -> getString(R.string.soundcloud)
+                2 -> getString(R.string.local_files)
                 else -> ""
             }
         }.attach()
