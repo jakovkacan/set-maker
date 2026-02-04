@@ -16,3 +16,4 @@ local.properties
 .ragmate.env
 compose.yml
 docker_data/
+/.idea/
