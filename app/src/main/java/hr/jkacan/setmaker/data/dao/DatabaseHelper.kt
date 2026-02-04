@@ -12,7 +12,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
 ) {
     companion object {
         private const val DATABASE_NAME = "setmaker.db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 3
 
         private const val SQL_CREATE_SONGS = """
             CREATE TABLE ${DatabaseContract.SongEntry.TABLE_NAME} (
@@ -21,7 +21,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
                 ${DatabaseContract.SongEntry.COLUMN_ARTIST} TEXT NOT NULL,
                 ${DatabaseContract.SongEntry.COLUMN_COVER_URL} TEXT,
                 ${DatabaseContract.SongEntry.COLUMN_PROVIDER} TEXT NOT NULL,
-                ${DatabaseContract.SongEntry.COLUMN_PREVIEW_URL} TEXT
+                ${DatabaseContract.SongEntry.COLUMN_PREVIEW_URL} TEXT,
+                ${DatabaseContract.SongEntry.COLUMN_SONG_URL} TEXT
             )
         """
 
@@ -85,6 +86,11 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
                 ${DatabaseContract.SetEdgeEntry.COLUMN_TO_NODE_ID}
             )
         """
+
+        private const val SQL_UPDATE_SONGS_WITH_SONG_URL = """
+            ALTER TABLE ${DatabaseContract.SongEntry.TABLE_NAME}
+            ADD COLUMN ${DatabaseContract.SongEntry.COLUMN_SONG_URL} TEXT
+        """
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -98,13 +104,15 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         when (oldVersion) {
+            3 -> {
+                db.execSQL(SQL_UPDATE_SONGS_WITH_SONG_URL)
+            }
             1 -> {
-                // Migrate from version 1 to 2
                 db.execSQL("DROP INDEX IF EXISTS idx_edge_from")
                 db.execSQL("DROP INDEX IF EXISTS idx_edge_to")
                 db.execSQL("DROP TABLE IF EXISTS ${DatabaseContract.SetEdgeEntry.TABLE_NAME}")
                 db.execSQL("DROP TABLE IF EXISTS ${DatabaseContract.SetNodeEntry.TABLE_NAME}")
-                db.execSQL("DROP TABLE IF EXISTS song_sets") // Old many-to-many table
+                db.execSQL("DROP TABLE IF EXISTS song_sets")
 
                 db.execSQL(SQL_CREATE_SET_NODES)
                 db.execSQL(SQL_CREATE_SET_EDGES)
@@ -113,7 +121,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
             }
 
             else -> {
-                // For other versions, recreate all tables
                 db.execSQL("DROP TABLE IF EXISTS ${DatabaseContract.SetEdgeEntry.TABLE_NAME}")
                 db.execSQL("DROP TABLE IF EXISTS ${DatabaseContract.SetNodeEntry.TABLE_NAME}")
                 db.execSQL("DROP TABLE IF EXISTS ${DatabaseContract.SetEntry.TABLE_NAME}")

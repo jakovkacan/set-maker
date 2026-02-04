@@ -129,7 +129,8 @@ class SetGraphRepository(private val context: Context) {
                     provider = SongProvider.valueOf(
                         it.getString(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PROVIDER))
                     ),
-                    previewUrl = it.getString(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PREVIEW_URL))
+                    previewUrl = it.getString(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PREVIEW_URL)),
+                    songUrl = it.getString(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_SONG_URL))
                 )
 
                 nodesWithSongs.add(SetNodeWithSong(node, song))
@@ -491,7 +492,8 @@ class SetGraphRepository(private val context: Context) {
             provider = SongProvider.valueOf(
                 cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PROVIDER))
             ),
-            previewUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PREVIEW_URL))
+            previewUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PREVIEW_URL)),
+            songUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_SONG_URL))
         )
 
         return SetNodeWithSong(node, song)

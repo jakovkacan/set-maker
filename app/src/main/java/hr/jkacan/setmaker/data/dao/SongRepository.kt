@@ -17,6 +17,7 @@ class SongRepository(context: Context) : Repository<Song> {
             put(DatabaseContract.SongEntry.COLUMN_COVER_URL, item.coverUrl)
             put(DatabaseContract.SongEntry.COLUMN_PROVIDER, item.provider.name)
             put(DatabaseContract.SongEntry.COLUMN_PREVIEW_URL, item.previewUrl)
+            put(DatabaseContract.SongEntry.COLUMN_SONG_URL, item.songUrl)
         }
         return db.insert(DatabaseContract.SongEntry.TABLE_NAME, null, values)
     }
@@ -29,6 +30,7 @@ class SongRepository(context: Context) : Repository<Song> {
             put(DatabaseContract.SongEntry.COLUMN_COVER_URL, item.coverUrl)
             put(DatabaseContract.SongEntry.COLUMN_PROVIDER, item.provider.name)
             put(DatabaseContract.SongEntry.COLUMN_PREVIEW_URL, item.previewUrl)
+            put(DatabaseContract.SongEntry.COLUMN_SONG_URL, item.songUrl)
         }
         val selection = "${DatabaseContract.SongEntry.COLUMN_ID} = ?"
         val selectionArgs = arrayOf(item.id.toString())
@@ -59,7 +61,8 @@ class SongRepository(context: Context) : Repository<Song> {
             DatabaseContract.SongEntry.COLUMN_ARTIST,
             DatabaseContract.SongEntry.COLUMN_COVER_URL,
             DatabaseContract.SongEntry.COLUMN_PROVIDER,
-            DatabaseContract.SongEntry.COLUMN_PREVIEW_URL
+            DatabaseContract.SongEntry.COLUMN_PREVIEW_URL,
+            DatabaseContract.SongEntry.COLUMN_SONG_URL
         )
 
         val selection = "${DatabaseContract.SongEntry.COLUMN_ID} = ?"
@@ -93,7 +96,8 @@ class SongRepository(context: Context) : Repository<Song> {
             DatabaseContract.SongEntry.COLUMN_ARTIST,
             DatabaseContract.SongEntry.COLUMN_COVER_URL,
             DatabaseContract.SongEntry.COLUMN_PROVIDER,
-            DatabaseContract.SongEntry.COLUMN_PREVIEW_URL
+            DatabaseContract.SongEntry.COLUMN_PREVIEW_URL,
+            DatabaseContract.SongEntry.COLUMN_SONG_URL
         )
 
         val cursor = db.query(
@@ -150,7 +154,8 @@ class SongRepository(context: Context) : Repository<Song> {
             provider = SongProvider.valueOf(
                 cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PROVIDER))
             ),
-            previewUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PREVIEW_URL))
+            previewUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PREVIEW_URL)),
+            songUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_SONG_URL))
         )
     }
 

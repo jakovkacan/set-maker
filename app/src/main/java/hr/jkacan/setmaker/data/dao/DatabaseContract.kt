@@ -10,6 +10,7 @@ object DatabaseContract {
         const val COLUMN_COVER_URL = "cover_url"
         const val COLUMN_PROVIDER = "provider"
         const val COLUMN_PREVIEW_URL = "preview_url"
+        const val COLUMN_SONG_URL = "song_url"
     }
 
     // Set table (playlist)

@@ -8,10 +8,12 @@ import android.widget.TextView
 import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.models.song.Song
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import hr.jkacan.setmaker.activities.MainActivity
 
 class SongOptionsBottomSheet : BottomSheetDialogFragment() {
 
     private lateinit var song: Song
+    var onSongDeleted: (() -> Unit)? = null
 
     companion object {
         private const val ARG_SONG = "song"
@@ -59,7 +61,8 @@ class SongOptionsBottomSheet : BottomSheetDialogFragment() {
         }
 
         view.findViewById<TextView>(R.id.option_delete).setOnClickListener {
-            // Delete song
+            (requireActivity() as MainActivity).songRepository.delete(song.id!!)
+            onSongDeleted?.invoke()
             dismiss()
         }
     }

@@ -4,20 +4,26 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.viewpager2.widget.ViewPager2
 import hr.jkacan.setmaker.adapters.QueryPagerAdapter
 import hr.jkacan.setmaker.R
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import hr.jkacan.setmaker.models.song.SongProvider
+import hr.jkacan.setmaker.viewmodels.QuerySharedViewModel
 
 class QueryFragment : Fragment() {
 
     private lateinit var searchBar: EditText
     private lateinit var tabLayout: TabLayout
     private lateinit var viewPager: ViewPager2
+
+    private val sharedViewModel: QuerySharedViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,6 +49,15 @@ class QueryFragment : Fragment() {
             }
         }.attach()
 
+        searchBar.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                performSearch()
+                true
+            } else {
+                false
+            }
+        }
+
         // set initial colors for the currently selected page
         updateTabColors(viewPager.currentItem)
 
@@ -65,6 +80,25 @@ class QueryFragment : Fragment() {
         })
 
         return view
+    }
+
+    private fun performSearch() {
+        val query = searchBar.text.toString().trim()
+        if (query.isNotEmpty()) {
+            val currentProvider = when (viewPager.currentItem) {
+                0 -> SongProvider.SPOTIFY
+                1 -> SongProvider.SOUNDCLOUD
+                2 -> SongProvider.LOCAL
+                else -> SongProvider.SPOTIFY
+            }
+            // Trigger the search in the ViewModel
+            sharedViewModel.search(query, currentProvider)
+
+            // Hide keyboard
+            val imm = requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+            imm.hideSoftInputFromWindow(searchBar.windowToken, 0)
+
+        }
     }
 
     private fun updateTabColors(index: Int) {

@@ -15,7 +15,7 @@
             android:summary="@string/theme_summary"
             android:entries="@array/theme_entries"
             android:entryValues="@array/theme_values"
-            android:defaultValue="default" />
+            android:defaultValue="red" />
 
     </PreferenceCategory>
 

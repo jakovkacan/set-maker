@@ -99,6 +99,14 @@ class LibraryFragment : Fragment() {
 
     private fun showSongOptionsModal(song: Song) {
         val modalFragment = SongOptionsBottomSheet.newInstance(song)
+        modalFragment.onSongDeleted = {
+            refreshSongs()
+        }
         modalFragment.show(parentFragmentManager, "SongOptions")
+    }
+
+    private fun refreshSongs() {
+        val songRepository = (requireActivity() as MainActivity).songRepository
+        filterSongs(songRepository)
     }
 }

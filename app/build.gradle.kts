@@ -1,11 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
 }
 
+val localProperties = Properties()
+localProperties.load(project.rootProject.file("local.properties").inputStream())
+
 android {
     namespace = "hr.jkacan.setmaker"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "hr.jkacan.setmaker"
@@ -25,6 +30,10 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            buildConfigField("String", "SPOTIFY_CLIENT_ID", localProperties.getProperty("SPOTIFY_CLIENT_ID"))
+            buildConfigField("String", "SPOTIFY_CLIENT_SECRET", localProperties.getProperty("SPOTIFY_CLIENT_SECRET"))
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -36,6 +45,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -63,4 +73,12 @@ dependencies {
 
     // Image Loading
     implementation(libs.coil)
+
+    // Retrofit for networking
+    implementation(libs.retrofit)
+    // GSON converter for Retrofit to handle JSON
+    implementation(libs.converter.gson)
+    // GSON library itself (if needed separately)
+    implementation(libs.gson)
+    implementation(libs.firebase.crashlytics.buildtools)
 }

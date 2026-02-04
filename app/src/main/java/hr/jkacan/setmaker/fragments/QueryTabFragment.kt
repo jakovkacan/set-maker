@@ -1,32 +1,45 @@
 package hr.jkacan.setmaker.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
+import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import hr.jkacan.setmaker.adapters.SongAdapter
 import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.R
+import hr.jkacan.setmaker.activities.MainActivity
+import hr.jkacan.setmaker.utils.showError
+import hr.jkacan.setmaker.viewmodels.QuerySharedViewModel
+import hr.jkacan.setmaker.viewmodels.SearchResultState
 
 class QueryTabFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
+    private lateinit var loadingIndicator: ProgressBar
     private lateinit var adapter: SongAdapter
     private var provider: SongProvider = SongProvider.SPOTIFY
+
+    private val sharedViewModel: QuerySharedViewModel by viewModels({ requireParentFragment() })
 
     companion object {
         private const val ARG_PROVIDER = "provider"
 
         fun newInstance(provider: SongProvider): QueryTabFragment {
-            val fragment = QueryTabFragment()
-            val args = Bundle()
-            args.putSerializable(ARG_PROVIDER, provider)
-            fragment.arguments = args
-            return fragment
+            return QueryTabFragment().apply {
+                arguments = Bundle().apply {
+                    putSerializable(ARG_PROVIDER, provider)
+                }
+            }
         }
     }
 
@@ -45,19 +58,22 @@ class QueryTabFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_query_tab, container, false)
 
         recyclerView = view.findViewById(R.id.query_results_recycler_view)
+        loadingIndicator = view.findViewById(R.id.loading_indicator)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        // Sample search results
-        val songs = getSearchResults()
+        val songRepository = (requireActivity() as MainActivity).songRepository
 
         adapter = SongAdapter(
-            songs,
+            emptyList(),
             onItemClick = { song ->
-                // Add song to library
+                songRepository.insert(song)
+                showError("Song added to library", requireContext())
+                Log.d("QueryTabFragment", "Song added to library: ${song.title}")
             },
             onItemLongPress = { song ->
                 // Show options
-            }
+            },
+            showAddButton = true
         )
 
         recyclerView.adapter = adapter
@@ -65,8 +81,34 @@ class QueryTabFragment : Fragment() {
         return view
     }
 
-    private fun getSearchResults(): List<Song> {
-        // Return filtered results based on provider
-        return emptyList()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Observe the search results from the shared ViewModel
+        sharedViewModel.searchResults.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is SearchResultState.Loading -> {
+                    loadingIndicator.isVisible = true
+                    recyclerView.isVisible = false
+                    Log.d("QueryTabFragment", "Loading...")
+                }
+
+                is SearchResultState.Success -> {
+                    loadingIndicator.isVisible = false
+                    recyclerView.isVisible = true
+                    // Filter results for this specific tab's provider
+                    val providerSongs = state.songs.filter { it.provider == provider }
+                    adapter.updateSongs(providerSongs)
+                    Log.d("QueryTabFragment", "Success: ${providerSongs.size} songs")
+                }
+
+                is SearchResultState.Error -> {
+                    loadingIndicator.isVisible = false
+                    recyclerView.isVisible = false
+                    showError(state.message, requireContext())
+                    Log.e("QueryTabFragment", "Error: ${state.message}")
+                }
+            }
+        }
     }
 }

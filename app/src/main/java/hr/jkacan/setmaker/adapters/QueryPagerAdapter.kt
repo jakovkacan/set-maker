@@ -11,10 +11,10 @@ class QueryPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> QueryTabFragment.Companion.newInstance(SongProvider.SPOTIFY)
-            1 -> QueryTabFragment.Companion.newInstance(SongProvider.SOUNDCLOUD)
-            2 -> QueryTabFragment.Companion.newInstance(SongProvider.LOCAL)
-            else -> QueryTabFragment.Companion.newInstance(SongProvider.SPOTIFY)
+            0 -> QueryTabFragment.newInstance(SongProvider.SPOTIFY)
+            1 -> QueryTabFragment.newInstance(SongProvider.SOUNDCLOUD)
+            2 -> QueryTabFragment.newInstance(SongProvider.LOCAL)
+            else -> QueryTabFragment.newInstance(SongProvider.SPOTIFY)
         }
     }
 }

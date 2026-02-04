@@ -153,11 +153,11 @@ class MainActivity : AppCompatActivity() {
     private fun createExampleSetWithGraph() {
         // Insert songs
         val song1Id =
-            songRepository.insert(Song(0, "Song A", "Artist 1", null, SongProvider.SPOTIFY, null))
+            songRepository.insert(Song(0, "Song A", "Artist 1", null, SongProvider.SPOTIFY, null, null))
         val song2Id =
-            songRepository.insert(Song(0, "Song B", "Artist 2", null, SongProvider.SPOTIFY, null))
+            songRepository.insert(Song(0, "Song B", "Artist 2", null, SongProvider.SPOTIFY, null, null))
         val song3Id =
-            songRepository.insert(Song(0, "Song C", "Artist 3", null, SongProvider.LOCAL, null))
+            songRepository.insert(Song(0, "Song C", "Artist 3", null, SongProvider.LOCAL, null, null))
         val song4Id = songRepository.insert(
             Song(
                 0,
@@ -165,6 +165,7 @@ class MainActivity : AppCompatActivity() {
                 "Artist 4",
                 null,
                 SongProvider.SOUNDCLOUD,
+                null,
                 null
             )
         )

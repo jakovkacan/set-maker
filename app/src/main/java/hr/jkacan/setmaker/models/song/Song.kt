@@ -8,5 +8,6 @@ data class Song(
     val artist: String,
     val coverUrl: String?,
     val provider: SongProvider,
-    val previewUrl: String?
+    val previewUrl: String?,
+    val songUrl: String?
 ) : Serializable
