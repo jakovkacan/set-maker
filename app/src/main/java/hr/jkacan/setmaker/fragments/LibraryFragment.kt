@@ -14,6 +14,7 @@ import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import hr.jkacan.setmaker.activities.MainActivity
+import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
 import hr.jkacan.setmaker.utils.AudioPreviewManager
 
 class LibraryFragment : Fragment() {
@@ -53,7 +54,7 @@ class LibraryFragment : Fragment() {
             onItemClick = { song -> },
             onItemLongPress = { song -> showSongOptionsModal(song) },
             audioPreviewManager = audioPreviewManager,
-            savedSongPlatformIds = null
+            savedSongPlatformIds = null,
         )
 
         recyclerView.adapter = adapter

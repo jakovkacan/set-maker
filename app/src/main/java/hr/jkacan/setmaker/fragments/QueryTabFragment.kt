@@ -79,7 +79,7 @@ class QueryTabFragment : Fragment() {
             },
             onItemLongPress = { song -> },
             audioPreviewManager = audioPreviewManager,
-            savedSongPlatformIds = emptyList()
+            savedSongPlatformIds = emptyList(),
         )
 
         recyclerView.adapter = adapter

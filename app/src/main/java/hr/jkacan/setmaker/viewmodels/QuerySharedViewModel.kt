@@ -9,6 +9,7 @@ import hr.jkacan.setmaker.data.dao.SongRepository
 import hr.jkacan.setmaker.data.dao.getSongRepository
 import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
+import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
 import hr.jkacan.setmaker.services.spotify.SpotifyService
 import kotlinx.coroutines.launch
 
@@ -25,7 +26,7 @@ class QuerySharedViewModel(private val songRepository: SongRepository) : ViewMod
 
     // Instantiate your services here
     private val spotifyService = SpotifyService()
-    // private val soundcloudService = SoundCloudService() // etc.
+    private val soundcloudService = SoundcloudService()
 
     private val _searchResults = MutableLiveData<SearchResultState>()
     val searchResults: LiveData<SearchResultState> = _searchResults
@@ -37,11 +38,7 @@ class QuerySharedViewModel(private val songRepository: SongRepository) : ViewMod
             try {
                 val results = when (provider) {
                     SongProvider.SPOTIFY -> spotifyService.query(query)
-                    SongProvider.SOUNDCLOUD -> {
-                        // TODO: Implement SoundCloudService.query(query)
-                        emptyList()
-                    }
-
+                    SongProvider.SOUNDCLOUD -> soundcloudService.query(query)
                     SongProvider.LOCAL -> {
                         // TODO: Implement local search logic
                         emptyList()

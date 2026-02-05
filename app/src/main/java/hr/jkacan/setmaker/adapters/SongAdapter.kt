@@ -14,15 +14,13 @@ import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.utils.AudioPreviewManager
 import hr.jkacan.setmaker.views.AnimatedCoverView
-import kotlin.collections.remove
-import kotlin.text.contains
 
 class SongAdapter(
     private var songs: List<Song>,
     private var savedSongPlatformIds: List<String>?,
     private val onItemClick: (Song) -> Unit,
     private val onItemLongPress: (Song) -> Unit,
-    private val audioPreviewManager: AudioPreviewManager
+    private val audioPreviewManager: AudioPreviewManager,
 
 ) : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
 

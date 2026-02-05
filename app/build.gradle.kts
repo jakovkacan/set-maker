@@ -33,6 +33,8 @@ android {
         debug {
             buildConfigField("String", "SPOTIFY_CLIENT_ID", localProperties.getProperty("SPOTIFY_CLIENT_ID"))
             buildConfigField("String", "SPOTIFY_CLIENT_SECRET", localProperties.getProperty("SPOTIFY_CLIENT_SECRET"))
+            buildConfigField("String", "SOUNDCLOUD_CLIENT_ID", localProperties.getProperty("SOUNDCLOUD_CLIENT_ID"))
+            buildConfigField("String", "SOUNDCLOUD_CLIENT_SECRET", localProperties.getProperty("SOUNDCLOUD_CLIENT_SECRET"))
         }
     }
     compileOptions {
@@ -84,4 +86,7 @@ dependencies {
     // JSON Path for parsing JSON for fetching Spotify preview URL
     implementation(libs.json.path)
     implementation(libs.jsoup)
+
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
 }
