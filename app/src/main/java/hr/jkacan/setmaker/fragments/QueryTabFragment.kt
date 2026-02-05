@@ -9,6 +9,8 @@ import android.widget.ProgressBar
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import hr.jkacan.setmaker.adapters.SongAdapter
@@ -27,7 +29,14 @@ class QueryTabFragment : Fragment() {
     private lateinit var adapter: SongAdapter
     private var provider: SongProvider = SongProvider.SPOTIFY
 
-    private val sharedViewModel: QuerySharedViewModel by viewModels({ requireParentFragment() })
+    private val sharedViewModel: QuerySharedViewModel by viewModels({ requireParentFragment() }) {
+        object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return QuerySharedViewModel((requireActivity() as MainActivity).songRepository) as T
+            }
+        }
+    }
+
     private val audioPreviewManager = AudioPreviewManager()
 
     companion object {
@@ -65,12 +74,12 @@ class QueryTabFragment : Fragment() {
         adapter = SongAdapter(
             emptyList(),
             onItemClick = { song ->
-                songRepository.insert(song)
-                showToast("Song added to library", requireContext())
+                val added = songRepository.toggleSavedSong(song)
+                adapter.updateSongSavedState(song.platformId!!, added)
             },
             onItemLongPress = { song -> },
             audioPreviewManager = audioPreviewManager,
-            showAddButton = true
+            savedSongPlatformIds = emptyList()
         )
 
         recyclerView.adapter = adapter
@@ -87,7 +96,6 @@ class QueryTabFragment : Fragment() {
                 is SearchResultState.Loading -> {
                     loadingIndicator.isVisible = true
                     recyclerView.isVisible = false
-                    Log.d("QueryTabFragment", "Loading...")
                 }
 
                 is SearchResultState.Success -> {
@@ -95,8 +103,8 @@ class QueryTabFragment : Fragment() {
                     recyclerView.isVisible = true
                     // Filter results for this specific tab's provider
                     val providerSongs = state.songs.filter { it.provider == provider }
-                    adapter.updateSongs(providerSongs)
-                    Log.d("QueryTabFragment", "Success: ${providerSongs.size} songs")
+                    val savedSongsIds = state.savedSongsIds
+                    adapter.updateSongs(providerSongs, savedSongsIds)
                 }
 
                 is SearchResultState.Error -> {

@@ -14,12 +14,14 @@ import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.utils.AudioPreviewManager
 import hr.jkacan.setmaker.views.AnimatedCoverView
+import kotlin.collections.remove
+import kotlin.text.contains
 
 class SongAdapter(
     private var songs: List<Song>,
+    private var savedSongPlatformIds: List<String>?,
     private val onItemClick: (Song) -> Unit,
     private val onItemLongPress: (Song) -> Unit,
-    private val showAddButton: Boolean = false,
     private val audioPreviewManager: AudioPreviewManager
 
 ) : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
@@ -31,7 +33,6 @@ class SongAdapter(
         val title: TextView = itemView.findViewById(R.id.song_title)
         val artist: TextView = itemView.findViewById(R.id.song_artist)
         val providerIcon: ImageView = itemView.findViewById(R.id.provider_icon)
-//        val addIcon: ImageView = itemView.findViewById(R.id.add_icon)
 
         init {
             itemView.setOnClickListener {
@@ -104,12 +105,16 @@ class SongAdapter(
             SongProvider.SOUNDCLOUD -> R.drawable.ic_soundcloud
             SongProvider.LOCAL -> R.drawable.ic_local_file
         }
-        holder.providerIcon.setImageResource(if (showAddButton) R.drawable.ic_add else providerIcon)
+        holder.providerIcon.setImageResource(
+            if (savedSongPlatformIds == null) providerIcon
+            else if (savedSongPlatformIds!!.contains(song.platformId)) R.drawable.ic_circle_check else R.drawable.ic_add
+        )
 
         holder.coverView.reset()
         if (song.coverUrl.isNullOrBlank()) {
             holder.coverView.getBaseImageView().setImageResource(R.drawable.placeholder_album_cover)
-            holder.coverView.getOverlayImageView().setImageResource(R.drawable.placeholder_album_cover)
+            holder.coverView.getOverlayImageView()
+                .setImageResource(R.drawable.placeholder_album_cover)
         } else {
             holder.coverView.getBaseImageView().load(song.coverUrl) {
                 crossfade(true)
@@ -126,10 +131,11 @@ class SongAdapter(
 
     override fun getItemCount(): Int = songs.size
 
-    fun updateSongs(newSongs: List<Song>) {
+    fun updateSongs(newSongs: List<Song>, newSavedSongsIds: List<String>? = null) {
         val diffCallback = SongDiffCallback(songs, newSongs)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         songs = newSongs
+        savedSongPlatformIds = newSavedSongsIds
         diffResult.dispatchUpdatesTo(this)
     }
 
@@ -140,6 +146,23 @@ class SongAdapter(
             currentPlayingPosition = RecyclerView.NO_POSITION
         }
     }
+
+    fun updateSongSavedState(platformId: String, isSaved: Boolean) {
+        val position = songs.indexOfFirst { it.platformId == platformId }
+        if (position != RecyclerView.NO_POSITION) {
+            val currentIds = savedSongPlatformIds?.toMutableList() ?: mutableListOf()
+            if (isSaved) {
+                if (!currentIds.contains(platformId)) {
+                    currentIds.add(platformId)
+                }
+            } else {
+                currentIds.remove(platformId)
+            }
+            savedSongPlatformIds = currentIds
+            notifyItemChanged(position)
+        }
+    }
+
 
     private class SongDiffCallback(
         private val oldList: List<Song>,

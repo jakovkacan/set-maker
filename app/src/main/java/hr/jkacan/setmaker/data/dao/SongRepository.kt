@@ -96,6 +96,42 @@ class SongRepository(context: Context) : Repository<Song> {
         }
     }
 
+    fun getByPlatformId(id: String): Song? {
+        val db = dbHelper.readableDatabase
+        val projection = arrayOf(
+            DatabaseContract.SongEntry.COLUMN_ID,
+            DatabaseContract.SongEntry.COLUMN_PLATFORM_ID,
+            DatabaseContract.SongEntry.COLUMN_TITLE,
+            DatabaseContract.SongEntry.COLUMN_ARTIST,
+            DatabaseContract.SongEntry.COLUMN_COVER_URL,
+            DatabaseContract.SongEntry.COLUMN_PROVIDER,
+            DatabaseContract.SongEntry.COLUMN_PREVIEW_URL,
+            DatabaseContract.SongEntry.COLUMN_SONG_URL,
+            DatabaseContract.SongEntry.COLUMN_DATE_ADDED
+        )
+
+        val selection = "${DatabaseContract.SongEntry.COLUMN_PLATFORM_ID} = ?"
+        val selectionArgs = arrayOf(id)
+
+        val cursor = db.query(
+            DatabaseContract.SongEntry.TABLE_NAME,
+            projection,
+            selection,
+            selectionArgs,
+            null,
+            null,
+            null
+        )
+
+        return cursor.use {
+            if (it.moveToFirst()) {
+                cursorToSong(it)
+            } else {
+                null
+            }
+        }
+    }
+
     override fun getAll(): List<Song> {
         val songs = mutableListOf<Song>()
         val db = dbHelper.readableDatabase
@@ -118,7 +154,7 @@ class SongRepository(context: Context) : Repository<Song> {
             null,
             null,
             null,
-            DatabaseContract.SongEntry.COLUMN_TITLE + " ASC"
+            DatabaseContract.SongEntry.COLUMN_DATE_ADDED + " DESC"
         )
 
         cursor.use {
@@ -144,7 +180,7 @@ class SongRepository(context: Context) : Repository<Song> {
             selectionArgs,
             null,
             null,
-            DatabaseContract.SongEntry.COLUMN_TITLE + " ASC"
+            DatabaseContract.SongEntry.COLUMN_DATE_ADDED + " DESC"
         )
 
         cursor.use {
@@ -154,6 +190,42 @@ class SongRepository(context: Context) : Repository<Song> {
         }
 
         return songs
+    }
+
+    fun getSavedSongPlatformIds(): List<String> {
+        val platformIds = mutableListOf<String>()
+        val db = dbHelper.readableDatabase
+        val projection = arrayOf(
+            DatabaseContract.SongEntry.COLUMN_PLATFORM_ID
+        )
+        val cursor = db.query(
+            DatabaseContract.SongEntry.TABLE_NAME,
+            projection,
+            null,
+            null,
+            null,
+            null,
+            null
+        )
+        cursor.use {
+            while (it.moveToNext()) {
+                platformIds.add(it.getString(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PLATFORM_ID)))
+            }
+        }
+
+        return platformIds
+    }
+
+    fun toggleSavedSong(song: Song): Boolean {
+        val savedSongs = getSavedSongPlatformIds()
+        if (savedSongs.contains(song.platformId)) {
+            val song = getByPlatformId(song.platformId!!)
+            delete(song?.id!!)
+            return false
+        } else {
+            insert(song)
+            return true
+        }
     }
 
     private fun cursorToSong(cursor: Cursor): Song {

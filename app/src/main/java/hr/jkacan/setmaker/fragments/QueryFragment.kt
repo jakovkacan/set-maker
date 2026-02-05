@@ -9,11 +9,14 @@ import android.widget.EditText
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import hr.jkacan.setmaker.adapters.QueryPagerAdapter
 import hr.jkacan.setmaker.R
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import hr.jkacan.setmaker.data.dao.SongRepository
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.viewmodels.QuerySharedViewModel
 
@@ -23,7 +26,14 @@ class QueryFragment : Fragment() {
     private lateinit var tabLayout: TabLayout
     private lateinit var viewPager: ViewPager2
 
-    private val sharedViewModel: QuerySharedViewModel by viewModels()
+    private val sharedViewModel: QuerySharedViewModel by viewModels {
+        object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                val songRepository = SongRepository(requireContext())
+                return QuerySharedViewModel(songRepository) as T
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -95,7 +105,8 @@ class QueryFragment : Fragment() {
             sharedViewModel.search(query, currentProvider)
 
             // Hide keyboard
-            val imm = requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+            val imm =
+                requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
             imm.hideSoftInputFromWindow(searchBar.windowToken, 0)
 
         }

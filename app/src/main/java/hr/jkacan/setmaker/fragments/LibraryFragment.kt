@@ -52,7 +52,8 @@ class LibraryFragment : Fragment() {
             songs,
             onItemClick = { song -> },
             onItemLongPress = { song -> showSongOptionsModal(song) },
-            audioPreviewManager = audioPreviewManager
+            audioPreviewManager = audioPreviewManager,
+            savedSongPlatformIds = null
         )
 
         recyclerView.adapter = adapter
@@ -88,7 +89,8 @@ class LibraryFragment : Fragment() {
             filteredSongs,
             onItemClick = { song -> },
             onItemLongPress = { song -> showSongOptionsModal(song) },
-            audioPreviewManager = audioPreviewManager
+            audioPreviewManager = audioPreviewManager,
+            savedSongPlatformIds = null
         )
         recyclerView.adapter = adapter
     }

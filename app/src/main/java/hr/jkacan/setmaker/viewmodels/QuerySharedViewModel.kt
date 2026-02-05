@@ -4,6 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hr.jkacan.setmaker.activities.MainActivity
+import hr.jkacan.setmaker.data.dao.SongRepository
+import hr.jkacan.setmaker.data.dao.getSongRepository
 import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.services.spotify.SpotifyService
@@ -12,11 +15,13 @@ import kotlinx.coroutines.launch
 // Sealed class to represent the state of the search results
 sealed class SearchResultState {
     object Loading : SearchResultState()
-    data class Success(val songs: List<Song>) : SearchResultState()
+    data class Success(val songs: List<Song>, val savedSongsIds: List<String>? = null) :
+        SearchResultState()
+
     data class Error(val message: String) : SearchResultState()
 }
 
-class QuerySharedViewModel : ViewModel() {
+class QuerySharedViewModel(private val songRepository: SongRepository) : ViewModel() {
 
     // Instantiate your services here
     private val spotifyService = SpotifyService()
@@ -36,15 +41,19 @@ class QuerySharedViewModel : ViewModel() {
                         // TODO: Implement SoundCloudService.query(query)
                         emptyList()
                     }
+
                     SongProvider.LOCAL -> {
                         // TODO: Implement local search logic
                         emptyList()
                     }
                 }
-                _searchResults.value = SearchResultState.Success(results)
+                val savedSongsIds: List<String> =
+                    songRepository.getAll().mapNotNull { it.platformId }
+                _searchResults.value = SearchResultState.Success(results, savedSongsIds)
             } catch (e: Exception) {
                 // Handle exceptions and set an error state
-                _searchResults.value = SearchResultState.Error("Failed to fetch results: ${e.message}")
+                _searchResults.value =
+                    SearchResultState.Error("Failed to fetch results: ${e.message}")
             }
         }
     }
