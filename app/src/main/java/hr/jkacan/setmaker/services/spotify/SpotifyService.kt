@@ -4,9 +4,13 @@ import android.util.Base64
 import hr.jkacan.setmaker.BuildConfig
 import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
+import kotlin.text.get
 
 interface SpotifyApiService {
     @FormUrlEncoded
@@ -50,21 +54,23 @@ class SpotifyService {
             val token = getToken()
             val response = api.searchTracks("Bearer $token", queryString)
 
-            var counter = 0;
-
-            response.tracks.items.map { dto ->
-                Song(
-                    id = ++counter,
-                    title = dto.name,
-                    // Join artist names as requested
-                    artist = dto.artists.joinToString(", ") { it.name },
-                    // album[images[0][url]] logic
-                    coverUrl = dto.album.images.firstOrNull()?.url,
-                    provider = SongProvider.SPOTIFY,
-                    previewUrl = dto.previewUrl,
-                    // external_urls["spotify"]
-                    songUrl = dto.externalUrls["spotify"]
-                )
+            coroutineScope {
+                response.tracks.items.mapIndexed { index, dto ->
+                    async {
+                        val preview = fetchPreviewUrl(dto.id)
+                        Song(
+                            id = index + 1,
+                            platformId = dto.id,
+                            title = dto.name,
+                            artist = dto.artists.joinToString(", ") { it.name },
+                            coverUrl = dto.album.images.firstOrNull()?.url,
+                            provider = SongProvider.SPOTIFY,
+                            previewUrl = preview,
+                            songUrl = dto.externalUrls["spotify"],
+                            dateAdded = null
+                        )
+                    }
+                }.awaitAll()
             }
         } catch (e: Exception) {
             emptyList()

@@ -43,7 +43,7 @@ class LibraryFragment : Fragment() {
         val songRepository = (requireActivity() as MainActivity).songRepository
 
         // Load all saved songs
-        val songs = songRepository.getAll()
+        val songs = songRepository.getAll().sortedByDescending { it.dateAdded }
 
         adapter = SongAdapter(
             songs,
@@ -82,7 +82,7 @@ class LibraryFragment : Fragment() {
             selectedProviders.flatMap { provider ->
                 songRepository.getSongsByProvider(provider)
             }
-        }
+        }.sortedByDescending { it.dateAdded }
 
         adapter = SongAdapter(
             filteredSongs,

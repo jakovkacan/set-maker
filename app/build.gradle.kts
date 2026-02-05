@@ -78,7 +78,10 @@ dependencies {
     implementation(libs.retrofit)
     // GSON converter for Retrofit to handle JSON
     implementation(libs.converter.gson)
-    // GSON library itself (if needed separately)
     implementation(libs.gson)
     implementation(libs.firebase.crashlytics.buildtools)
+
+    // JSON Path for parsing JSON for fetching Spotify preview URL
+    implementation(libs.json.path)
+    implementation(libs.jsoup)
 }

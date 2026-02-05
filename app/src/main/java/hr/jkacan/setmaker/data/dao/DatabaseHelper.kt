@@ -12,17 +12,19 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
 ) {
     companion object {
         private const val DATABASE_NAME = "setmaker.db"
-        private const val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 4
 
         private const val SQL_CREATE_SONGS = """
             CREATE TABLE ${DatabaseContract.SongEntry.TABLE_NAME} (
                 ${DatabaseContract.SongEntry.COLUMN_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
+                ${DatabaseContract.SongEntry.COLUMN_PLATFORM_ID} TEXT,
                 ${DatabaseContract.SongEntry.COLUMN_TITLE} TEXT NOT NULL,
                 ${DatabaseContract.SongEntry.COLUMN_ARTIST} TEXT NOT NULL,
                 ${DatabaseContract.SongEntry.COLUMN_COVER_URL} TEXT,
                 ${DatabaseContract.SongEntry.COLUMN_PROVIDER} TEXT NOT NULL,
                 ${DatabaseContract.SongEntry.COLUMN_PREVIEW_URL} TEXT,
-                ${DatabaseContract.SongEntry.COLUMN_SONG_URL} TEXT
+                ${DatabaseContract.SongEntry.COLUMN_SONG_URL} TEXT,
+                ${DatabaseContract.SongEntry.COLUMN_DATE_ADDED} DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """
 
@@ -30,7 +32,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
             CREATE TABLE ${DatabaseContract.SetEntry.TABLE_NAME} (
                 ${DatabaseContract.SetEntry.COLUMN_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
                 ${DatabaseContract.SetEntry.COLUMN_NAME} TEXT NOT NULL,
-                ${DatabaseContract.SetEntry.COLUMN_COVER_URL} TEXT
+                ${DatabaseContract.SetEntry.COLUMN_COVER_URL} TEXT,
+                ${DatabaseContract.SetEntry.COLUMN_DATE_ADDED} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                ${DatabaseContract.SetEntry.COLUMN_DATE_UPDATED} DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """
 
@@ -91,6 +95,18 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
             ALTER TABLE ${DatabaseContract.SongEntry.TABLE_NAME}
             ADD COLUMN ${DatabaseContract.SongEntry.COLUMN_SONG_URL} TEXT
         """
+
+        private const val SQL_UPDATE_SONGS_WITH_PLATFORMID_DATEADDED = """
+            ALTER TABLE ${DatabaseContract.SongEntry.TABLE_NAME}
+            ADD COLUMN ${DatabaseContract.SongEntry.COLUMN_PLATFORM_ID} TEXT,
+            ADD COLUMN ${DatabaseContract.SongEntry.COLUMN_DATE_ADDED} DATETIME DEFAULT CURRENT_TIMESTAMP
+        """
+
+        private const val SQL_UPDATE_SETS_WITH_DATEADDED_DATEUPDATED = """
+            ALTER TABLE ${DatabaseContract.SetEntry.TABLE_NAME}
+            ADD COLUMN ${DatabaseContract.SetEntry.COLUMN_DATE_ADDED} DATETIME DEFAULT CURRENT_TIMESTAMP,
+            ADD COLUMN ${DatabaseContract.SetEntry.COLUMN_DATE_UPDATED} DATETIME DEFAULT CURRENT_TIMESTAMP
+        """
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -104,9 +120,14 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         when (oldVersion) {
+            4 -> {
+                db.execSQL(SQL_UPDATE_SONGS_WITH_PLATFORMID_DATEADDED)
+                db.execSQL(SQL_UPDATE_SETS_WITH_DATEADDED_DATEUPDATED)
+            }
             3 -> {
                 db.execSQL(SQL_UPDATE_SONGS_WITH_SONG_URL)
             }
+            2 -> {}
             1 -> {
                 db.execSQL("DROP INDEX IF EXISTS idx_edge_from")
                 db.execSQL("DROP INDEX IF EXISTS idx_edge_to")

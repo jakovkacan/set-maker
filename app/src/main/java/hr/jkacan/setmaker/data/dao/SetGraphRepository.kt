@@ -10,6 +10,7 @@ import hr.jkacan.setmaker.models.set.SetNode
 import hr.jkacan.setmaker.models.set.SetNodeWithSong
 import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
+import hr.jkacan.setmaker.utils.parseStringAsDate
 
 class SetGraphRepository(private val context: Context) {
     private val dbHelper = DatabaseHelper(context)
@@ -123,6 +124,7 @@ class SetGraphRepository(private val context: Context) {
 
                 val song = Song(
                     id = it.getInt(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_ID)),
+                    platformId = it.getString(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PLATFORM_ID)),
                     title = it.getString(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_TITLE)),
                     artist = it.getString(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_ARTIST)),
                     coverUrl = it.getString(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_COVER_URL)),
@@ -130,7 +132,14 @@ class SetGraphRepository(private val context: Context) {
                         it.getString(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PROVIDER))
                     ),
                     previewUrl = it.getString(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PREVIEW_URL)),
-                    songUrl = it.getString(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_SONG_URL))
+                    songUrl = it.getString(it.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_SONG_URL)),
+                    dateAdded = parseStringAsDate(
+                        it.getString(
+                            it.getColumnIndexOrThrow(
+                                DatabaseContract.SongEntry.COLUMN_DATE_ADDED
+                            )
+                        )
+                    )
                 )
 
                 nodesWithSongs.add(SetNodeWithSong(node, song))
@@ -486,6 +495,7 @@ class SetGraphRepository(private val context: Context) {
 
         val song = Song(
             id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_ID)),
+            platformId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PLATFORM_ID)),
             title = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_TITLE)),
             artist = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_ARTIST)),
             coverUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_COVER_URL)),
@@ -493,7 +503,14 @@ class SetGraphRepository(private val context: Context) {
                 cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PROVIDER))
             ),
             previewUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_PREVIEW_URL)),
-            songUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_SONG_URL))
+            songUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_SONG_URL)),
+            dateAdded = parseStringAsDate(
+                cursor.getString(
+                    cursor.getColumnIndexOrThrow(
+                        DatabaseContract.SongEntry.COLUMN_DATE_ADDED
+                    )
+                )
+            )
         )
 
         return SetNodeWithSong(node, song)

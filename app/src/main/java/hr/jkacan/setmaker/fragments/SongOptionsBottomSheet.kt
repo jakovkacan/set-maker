@@ -1,5 +1,7 @@
 package hr.jkacan.setmaker.fragments
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +11,9 @@ import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.models.song.Song
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import hr.jkacan.setmaker.activities.MainActivity
+import hr.jkacan.setmaker.utils.showToast
+import androidx.core.net.toUri
+import hr.jkacan.setmaker.services.spotify.fetchPreviewUrl
 
 class SongOptionsBottomSheet : BottomSheetDialogFragment() {
 
@@ -50,13 +55,20 @@ class SongOptionsBottomSheet : BottomSheetDialogFragment() {
             dismiss()
         }
 
-        view.findViewById<TextView>(R.id.option_pin).setOnClickListener {
-            // Toggle pin
+        view.findViewById<TextView>(R.id.option_external_player).setOnClickListener {
+            song.songUrl?.let { url ->
+                val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                try {
+                    startActivity(intent)
+                } catch (e: ActivityNotFoundException) {
+                    // Handle case where no app can handle the URL
+                    showToast("No app found to open this link", requireContext())
+                }
+            }
             dismiss()
         }
 
         view.findViewById<TextView>(R.id.option_share).setOnClickListener {
-            // Share song
             dismiss()
         }
 

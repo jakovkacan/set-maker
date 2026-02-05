@@ -6,19 +6,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import hr.jkacan.setmaker.adapters.SongAdapter
-import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.activities.MainActivity
-import hr.jkacan.setmaker.utils.showError
+import hr.jkacan.setmaker.utils.showToast
 import hr.jkacan.setmaker.viewmodels.QuerySharedViewModel
 import hr.jkacan.setmaker.viewmodels.SearchResultState
 
@@ -67,11 +64,11 @@ class QueryTabFragment : Fragment() {
             emptyList(),
             onItemClick = { song ->
                 songRepository.insert(song)
-                showError("Song added to library", requireContext())
+                showToast("Song added to library", requireContext())
                 Log.d("QueryTabFragment", "Song added to library: ${song.title}")
             },
             onItemLongPress = { song ->
-                // Show options
+                showToast(song.previewUrl ?: "No preview URL available", requireContext())
             },
             showAddButton = true
         )
@@ -105,7 +102,7 @@ class QueryTabFragment : Fragment() {
                 is SearchResultState.Error -> {
                     loadingIndicator.isVisible = false
                     recyclerView.isVisible = false
-                    showError(state.message, requireContext())
+                    showToast(state.message, requireContext())
                     Log.e("QueryTabFragment", "Error: ${state.message}")
                 }
             }

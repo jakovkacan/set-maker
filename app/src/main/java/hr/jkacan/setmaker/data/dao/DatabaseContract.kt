@@ -5,12 +5,14 @@ object DatabaseContract {
     object SongEntry {
         const val TABLE_NAME = "songs"
         const val COLUMN_ID = "id"
+        const val COLUMN_PLATFORM_ID = "platform_id"
         const val COLUMN_TITLE = "title"
         const val COLUMN_ARTIST = "artist"
         const val COLUMN_COVER_URL = "cover_url"
         const val COLUMN_PROVIDER = "provider"
         const val COLUMN_PREVIEW_URL = "preview_url"
         const val COLUMN_SONG_URL = "song_url"
+        const val COLUMN_DATE_ADDED = "date_added"
     }
 
     // Set table (playlist)
@@ -19,6 +21,8 @@ object DatabaseContract {
         const val COLUMN_ID = "id"
         const val COLUMN_NAME = "name"
         const val COLUMN_COVER_URL = "cover_url"
+        const val COLUMN_DATE_ADDED = "date_added"
+        const val COLUMN_DATE_UPDATED = "date_updated"
     }
 
     // Set Node table - each occurrence/slot in a set

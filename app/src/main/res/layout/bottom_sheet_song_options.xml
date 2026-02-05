@@ -28,14 +28,14 @@
         android:background="?attr/selectableItemBackground" />
 
     <TextView
-        android:id="@+id/option_pin"
+        android:id="@+id/option_external_player"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/pin_song"
+        android:text="@string/open_in_external_player"
         android:textSize="16sp"
         android:textColor="@color/text_primary"
         android:padding="16dp"
-        android:drawableStart="@drawable/ic_pin"
+        android:drawableStart="@drawable/ic_play"
         android:drawablePadding="16dp"
         android:background="?attr/selectableItemBackground" />
 

@@ -4,7 +4,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.enableEdgeToEdge
@@ -25,9 +24,6 @@ import hr.jkacan.setmaker.data.dao.SongRepository
 import hr.jkacan.setmaker.data.dao.getSetGraphRepository
 import hr.jkacan.setmaker.data.dao.getSetRepository
 import hr.jkacan.setmaker.data.dao.getSongRepository
-import hr.jkacan.setmaker.models.set.SetItem
-import hr.jkacan.setmaker.models.song.Song
-import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.utils.ThemeHelper
 
 class MainActivity : AppCompatActivity() {
@@ -100,9 +96,6 @@ class MainActivity : AppCompatActivity() {
             view.updatePadding(top = insets.top)
             windowInsets
         }
-
-        //TODO Remove
-//        createExampleSetWithGraph()
     }
 
     override fun onResume() {
@@ -150,90 +143,71 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    private fun createExampleSetWithGraph() {
-        // Insert songs
-        val song1Id =
-            songRepository.insert(Song(0, "Song A", "Artist 1", null, SongProvider.SPOTIFY, null, null))
-        val song2Id =
-            songRepository.insert(Song(0, "Song B", "Artist 2", null, SongProvider.SPOTIFY, null, null))
-        val song3Id =
-            songRepository.insert(Song(0, "Song C", "Artist 3", null, SongProvider.LOCAL, null, null))
-        val song4Id = songRepository.insert(
-            Song(
-                0,
-                "Song D",
-                "Artist 4",
-                null,
-                SongProvider.SOUNDCLOUD,
-                null,
-                null
-            )
-        )
-
-        // Create a set
-        val setId = setRepository.insert(SetItem(0, "My DJ Set", null))
-
-        // Add nodes (same song can appear multiple times)
-        val node1Id = setGraphRepository.insertNode(setId.toInt(), song1Id.toInt(), "Intro track")
-        val node2Id = setGraphRepository.insertNode(setId.toInt(), song2Id.toInt(), "Build up")
-        val node3Id = setGraphRepository.insertNode(setId.toInt(), song3Id.toInt(), "Peak")
-        val node4Id = setGraphRepository.insertNode(setId.toInt(), song4Id.toInt(), "Cool down")
-        val node5Id = setGraphRepository.insertNode(setId.toInt(), song1Id.toInt(), "Reprise")
-
-        // Create edges (transitions)
-        // Default path: node1 -> node2 -> node3 -> node4
-        setGraphRepository.insertEdge(
-            setId.toInt(),
-            node1Id.toInt(),
-            node2Id.toInt(),
-            ord = 0,
-            kind = "default"
-        )
-        setGraphRepository.insertEdge(
-            setId.toInt(),
-            node2Id.toInt(),
-            node3Id.toInt(),
-            ord = 0,
-            kind = "default"
-        )
-        setGraphRepository.insertEdge(
-            setId.toInt(),
-            node3Id.toInt(),
-            node4Id.toInt(),
-            ord = 0,
-            kind = "default"
-        )
-
-        // Alternative path: node2 -> node5 (instead of node3)
-        setGraphRepository.insertEdge(
-            setId.toInt(),
-            node2Id.toInt(),
-            node5Id.toInt(),
-            ord = 1,
-            kind = "alt"
-        )
-        setGraphRepository.insertEdge(
-            setId.toInt(),
-            node5Id.toInt(),
-            node4Id.toInt(),
-            ord = 0,
-            kind = "default"
-        )
-
-        // Traverse the graph
-        val startNodes = setGraphRepository.getStartNodes(setId.toInt())
-        Log.d("SetGraph", "Start nodes: ${startNodes.size}")
-
-        val defaultPath = setGraphRepository.getDefaultPath(setId.toInt())
-        defaultPath?.let { path ->
-            Log.d("SetGraph", "Default path has ${path.nodes.size} nodes")
-            path.nodes.forEach { nodeWithSong ->
-                Log.d("SetGraph", "Node: ${nodeWithSong.song.title} - ${nodeWithSong.node.note}")
-            }
-        }
-
-        // Get alternatives from node2
-        val alternatives = setGraphRepository.getNextNodes(setId.toInt(), node2Id.toInt())
-        Log.d("SetGraph", "Node 2 has ${alternatives.size} outgoing paths")
-    }
+//    private fun createExampleSetWithGraph() {
+//        // Create a set
+//        val setId = setRepository.insert(SetItem(0, "My DJ Set", null))
+//
+//        // Add nodes (same song can appear multiple times)
+//        val node1Id = setGraphRepository.insertNode(setId.toInt(), song1Id.toInt(), "Intro track")
+//        val node2Id = setGraphRepository.insertNode(setId.toInt(), song2Id.toInt(), "Build up")
+//        val node3Id = setGraphRepository.insertNode(setId.toInt(), song3Id.toInt(), "Peak")
+//        val node4Id = setGraphRepository.insertNode(setId.toInt(), song4Id.toInt(), "Cool down")
+//        val node5Id = setGraphRepository.insertNode(setId.toInt(), song1Id.toInt(), "Reprise")
+//
+//        // Create edges (transitions)
+//        // Default path: node1 -> node2 -> node3 -> node4
+//        setGraphRepository.insertEdge(
+//            setId.toInt(),
+//            node1Id.toInt(),
+//            node2Id.toInt(),
+//            ord = 0,
+//            kind = "default"
+//        )
+//        setGraphRepository.insertEdge(
+//            setId.toInt(),
+//            node2Id.toInt(),
+//            node3Id.toInt(),
+//            ord = 0,
+//            kind = "default"
+//        )
+//        setGraphRepository.insertEdge(
+//            setId.toInt(),
+//            node3Id.toInt(),
+//            node4Id.toInt(),
+//            ord = 0,
+//            kind = "default"
+//        )
+//
+//        // Alternative path: node2 -> node5 (instead of node3)
+//        setGraphRepository.insertEdge(
+//            setId.toInt(),
+//            node2Id.toInt(),
+//            node5Id.toInt(),
+//            ord = 1,
+//            kind = "alt"
+//        )
+//        setGraphRepository.insertEdge(
+//            setId.toInt(),
+//            node5Id.toInt(),
+//            node4Id.toInt(),
+//            ord = 0,
+//            kind = "default"
+//        )
+//
+//        // Traverse the graph
+//        val startNodes = setGraphRepository.getStartNodes(setId.toInt())
+//        Log.d("SetGraph", "Start nodes: ${startNodes.size}")
+//
+//        val defaultPath = setGraphRepository.getDefaultPath(setId.toInt())
+//        defaultPath?.let { path ->
+//            Log.d("SetGraph", "Default path has ${path.nodes.size} nodes")
+//            path.nodes.forEach { nodeWithSong ->
+//                Log.d("SetGraph", "Node: ${nodeWithSong.song.title} - ${nodeWithSong.node.note}")
+//            }
+//        }
+//
+//        // Get alternatives from node2
+//        val alternatives = setGraphRepository.getNextNodes(setId.toInt(), node2Id.toInt())
+//        Log.d("SetGraph", "Node 2 has ${alternatives.size} outgoing paths")
+//    }
 }

@@ -7,6 +7,8 @@ constraintlayout = "2.1.4"
 converterGson = "2.9.0"
 coreKtx = "1.12.0"
 gson = "2.10.1"
+jsonPath = "2.10.0"
+jsoup = "1.22.1"
 kotlin = "2.0.21"
 junit = "4.13.2"
 junitVersion = "1.1.5"
@@ -33,6 +35,8 @@ androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref =
 coil = { module = "io.coil-kt:coil", version.ref = "coil" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "jsonPath" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

@@ -4,6 +4,9 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import hr.jkacan.setmaker.models.set.SetItem
+import hr.jkacan.setmaker.utils.formatDate
+import hr.jkacan.setmaker.utils.parseStringAsDate
+import java.util.Date
 
 class SetRepository(context: Context) : Repository<SetItem> {
     private val dbHelper = DatabaseHelper(context)
@@ -13,6 +16,8 @@ class SetRepository(context: Context) : Repository<SetItem> {
         val values = ContentValues().apply {
             put(DatabaseContract.SetEntry.COLUMN_NAME, item.name)
             put(DatabaseContract.SetEntry.COLUMN_COVER_URL, item.coverUrl)
+            put(DatabaseContract.SetEntry.COLUMN_DATE_ADDED, formatDate(Date()))
+            put(DatabaseContract.SetEntry.COLUMN_DATE_UPDATED, formatDate(Date()))
         }
         return db.insert(DatabaseContract.SetEntry.TABLE_NAME, null, values)
     }
@@ -22,6 +27,8 @@ class SetRepository(context: Context) : Repository<SetItem> {
         val values = ContentValues().apply {
             put(DatabaseContract.SetEntry.COLUMN_NAME, item.name)
             put(DatabaseContract.SetEntry.COLUMN_COVER_URL, item.coverUrl)
+            put(DatabaseContract.SetEntry.COLUMN_DATE_ADDED, formatDate(item.dateAdded))
+            put(DatabaseContract.SetEntry.COLUMN_DATE_UPDATED, formatDate(Date()))
         }
         val selection = "${DatabaseContract.SetEntry.COLUMN_ID} = ?"
         val selectionArgs = arrayOf(item.id.toString())
@@ -49,7 +56,9 @@ class SetRepository(context: Context) : Repository<SetItem> {
         val projection = arrayOf(
             DatabaseContract.SetEntry.COLUMN_ID,
             DatabaseContract.SetEntry.COLUMN_NAME,
-            DatabaseContract.SetEntry.COLUMN_COVER_URL
+            DatabaseContract.SetEntry.COLUMN_COVER_URL,
+            DatabaseContract.SetEntry.COLUMN_DATE_ADDED,
+            DatabaseContract.SetEntry.COLUMN_DATE_UPDATED
         )
 
         val selection = "${DatabaseContract.SetEntry.COLUMN_ID} = ?"
@@ -80,7 +89,9 @@ class SetRepository(context: Context) : Repository<SetItem> {
         val projection = arrayOf(
             DatabaseContract.SetEntry.COLUMN_ID,
             DatabaseContract.SetEntry.COLUMN_NAME,
-            DatabaseContract.SetEntry.COLUMN_COVER_URL
+            DatabaseContract.SetEntry.COLUMN_COVER_URL,
+            DatabaseContract.SetEntry.COLUMN_DATE_ADDED,
+            DatabaseContract.SetEntry.COLUMN_DATE_UPDATED
         )
 
         val cursor = db.query(
@@ -106,7 +117,21 @@ class SetRepository(context: Context) : Repository<SetItem> {
         return SetItem(
             id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.SetEntry.COLUMN_ID)),
             name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SetEntry.COLUMN_NAME)),
-            coverUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SetEntry.COLUMN_COVER_URL))
+            coverUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SetEntry.COLUMN_COVER_URL)),
+            dateAdded = parseStringAsDate(
+                cursor.getString(
+                    cursor.getColumnIndexOrThrow(
+                        DatabaseContract.SetEntry.COLUMN_DATE_ADDED
+                    )
+                )
+            ),
+            dateUpdated = parseStringAsDate(
+                cursor.getString(
+                    cursor.getColumnIndexOrThrow(
+                        DatabaseContract.SetEntry.COLUMN_DATE_UPDATED
+                    )
+                )
+            )
         )
     }
 
