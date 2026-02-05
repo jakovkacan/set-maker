@@ -14,6 +14,7 @@ import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import hr.jkacan.setmaker.activities.MainActivity
+import hr.jkacan.setmaker.utils.AudioPreviewManager
 
 class LibraryFragment : Fragment() {
 
@@ -23,6 +24,8 @@ class LibraryFragment : Fragment() {
     private lateinit var chipSpotify: Chip
     private lateinit var chipSoundcloud: Chip
     private lateinit var chipLocal: Chip
+    private val audioPreviewManager = AudioPreviewManager()
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,12 +50,9 @@ class LibraryFragment : Fragment() {
 
         adapter = SongAdapter(
             songs,
-            onItemClick = { song ->
-                // Handle song click
-            },
-            onItemLongPress = { song ->
-                showSongOptionsModal(song)
-            }
+            onItemClick = { song -> },
+            onItemLongPress = { song -> showSongOptionsModal(song) },
+            audioPreviewManager = audioPreviewManager
         )
 
         recyclerView.adapter = adapter
@@ -86,12 +86,9 @@ class LibraryFragment : Fragment() {
 
         adapter = SongAdapter(
             filteredSongs,
-            onItemClick = { song ->
-                // Handle song click
-            },
-            onItemLongPress = { song ->
-                showSongOptionsModal(song)
-            }
+            onItemClick = { song -> },
+            onItemLongPress = { song -> showSongOptionsModal(song) },
+            audioPreviewManager = audioPreviewManager
         )
         recyclerView.adapter = adapter
     }

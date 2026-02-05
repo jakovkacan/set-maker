@@ -15,6 +15,7 @@ import hr.jkacan.setmaker.adapters.SongAdapter
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.activities.MainActivity
+import hr.jkacan.setmaker.utils.AudioPreviewManager
 import hr.jkacan.setmaker.utils.showToast
 import hr.jkacan.setmaker.viewmodels.QuerySharedViewModel
 import hr.jkacan.setmaker.viewmodels.SearchResultState
@@ -27,6 +28,7 @@ class QueryTabFragment : Fragment() {
     private var provider: SongProvider = SongProvider.SPOTIFY
 
     private val sharedViewModel: QuerySharedViewModel by viewModels({ requireParentFragment() })
+    private val audioPreviewManager = AudioPreviewManager()
 
     companion object {
         private const val ARG_PROVIDER = "provider"
@@ -65,11 +67,9 @@ class QueryTabFragment : Fragment() {
             onItemClick = { song ->
                 songRepository.insert(song)
                 showToast("Song added to library", requireContext())
-                Log.d("QueryTabFragment", "Song added to library: ${song.title}")
             },
-            onItemLongPress = { song ->
-                showToast(song.previewUrl ?: "No preview URL available", requireContext())
-            },
+            onItemLongPress = { song -> },
+            audioPreviewManager = audioPreviewManager,
             showAddButton = true
         )
 
