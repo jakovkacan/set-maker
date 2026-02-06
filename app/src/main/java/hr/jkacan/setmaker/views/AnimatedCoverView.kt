@@ -2,14 +2,13 @@ package hr.jkacan.setmaker.views
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
-import androidx.core.content.ContextCompat
-import hr.jkacan.setmaker.R
+import com.google.android.material.progressindicator.CircularProgressIndicator
 
 class AnimatedCoverView @JvmOverloads constructor(
     context: Context,
@@ -27,6 +26,7 @@ class AnimatedCoverView @JvmOverloads constructor(
         scaleType = ImageView.ScaleType.CENTER_CROP
     }
     private var progress = 1f
+    private var bufferingIndicator: CircularProgressIndicator? = null
 
     init {
         addView(baseImageView)
@@ -37,14 +37,29 @@ class AnimatedCoverView @JvmOverloads constructor(
     fun getBaseImageView(): AppCompatImageView = baseImageView
     fun getOverlayImageView(): AppCompatImageView = overlayImageView
 
+    fun setBufferingIndicator(indicator: CircularProgressIndicator) {
+        bufferingIndicator = indicator
+    }
+
+    fun showBuffering() {
+        bufferingIndicator?.visibility = View.VISIBLE
+        overlayImageView.setClipProgress(0f)
+    }
+
+    fun hideBuffering() {
+        bufferingIndicator?.visibility = View.GONE
+    }
+
     fun setProgress(progress: Float) {
         this.progress = progress.coerceIn(0f, 1f)
         overlayImageView.setClipProgress(this.progress)
+        hideBuffering()
     }
 
     fun reset() {
         progress = 0f
         overlayImageView.setClipProgress(1f)
+        hideBuffering()
     }
 
     private class ClippableImageView @JvmOverloads constructor(

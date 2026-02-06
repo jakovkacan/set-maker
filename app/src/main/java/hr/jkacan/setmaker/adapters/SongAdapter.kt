@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
@@ -12,8 +13,12 @@ import coil.transform.RoundedCornersTransformation
 import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
+import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
 import hr.jkacan.setmaker.utils.AudioPreviewManager
 import hr.jkacan.setmaker.views.AnimatedCoverView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class SongAdapter(
     private var songs: List<Song>,
@@ -21,6 +26,7 @@ class SongAdapter(
     private val onItemClick: (Song) -> Unit,
     private val onItemLongPress: (Song) -> Unit,
     private val audioPreviewManager: AudioPreviewManager,
+    private val soundcloudService: SoundcloudService? = null
 
 ) : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
 
@@ -31,8 +37,12 @@ class SongAdapter(
         val title: TextView = itemView.findViewById(R.id.song_title)
         val artist: TextView = itemView.findViewById(R.id.song_artist)
         val providerIcon: ImageView = itemView.findViewById(R.id.provider_icon)
+        private val bufferingIndicator: com.google.android.material.progressindicator.CircularProgressIndicator =
+            itemView.findViewById(R.id.buffering_indicator)
 
         init {
+            coverView.setBufferingIndicator(bufferingIndicator)
+
             itemView.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
@@ -71,17 +81,33 @@ class SongAdapter(
                 }
 
                 currentPlayingPosition = position
-                coverView.setProgress(0f)
-                audioPreviewManager.play(
-                    url = previewUrl,
-                    onProgress = { progress ->
-                        coverView.setProgress(progress)
-                    },
-                    onComplete = {
-                        coverView.reset()
-                        currentPlayingPosition = RecyclerView.NO_POSITION
+                coverView.showBuffering()
+
+                val scope = (itemView.context as? androidx.lifecycle.LifecycleOwner)?.lifecycleScope
+                    ?: CoroutineScope(Dispatchers.Main)
+
+                scope.launch {
+                    val authToken = if (song.provider == SongProvider.SOUNDCLOUD) {
+                        soundcloudService?.getToken()
+                    } else {
+                        null
                     }
-                )
+
+                    audioPreviewManager.play(
+                        url = previewUrl,
+                        authToken = authToken,
+                        onBuffering = { isBuffering ->
+                            if (isBuffering) coverView.showBuffering() else coverView.hideBuffering()
+                        },
+                        onProgress = { progress ->
+                            coverView.setProgress(progress)
+                        },
+                        onComplete = {
+                            coverView.reset()
+                            currentPlayingPosition = RecyclerView.NO_POSITION
+                        }
+                    )
+                }
             }
         }
     }

@@ -1,5 +1,6 @@
 package hr.jkacan.setmaker.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +17,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import hr.jkacan.setmaker.activities.MainActivity
 import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
 import hr.jkacan.setmaker.utils.AudioPreviewManager
+import hr.jkacan.setmaker.utils.getServiceOrNull
 
 class LibraryFragment : Fragment() {
 
@@ -25,7 +27,13 @@ class LibraryFragment : Fragment() {
     private lateinit var chipSpotify: Chip
     private lateinit var chipSoundcloud: Chip
     private lateinit var chipLocal: Chip
-    private val audioPreviewManager = AudioPreviewManager()
+    private lateinit var audioPreviewManager: AudioPreviewManager
+    private lateinit var soundcloudService: SoundcloudService
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        audioPreviewManager = AudioPreviewManager(context)
+    }
 
 
     override fun onCreateView(
@@ -49,12 +57,18 @@ class LibraryFragment : Fragment() {
         // Load all saved songs
         val songs = songRepository.getAll().sortedByDescending { it.dateAdded }
 
+        if (songs.any { it.provider == SongProvider.SOUNDCLOUD }) soundcloudService =
+            SoundcloudService()
+
+        val scServiceOrNull = getServiceOrNull(::soundcloudService)
+
         adapter = SongAdapter(
             songs,
             onItemClick = { song -> },
             onItemLongPress = { song -> showSongOptionsModal(song) },
             audioPreviewManager = audioPreviewManager,
             savedSongPlatformIds = null,
+            soundcloudService = scServiceOrNull
         )
 
         recyclerView.adapter = adapter
@@ -86,12 +100,15 @@ class LibraryFragment : Fragment() {
             }
         }.sortedByDescending { it.dateAdded }
 
+        val scServiceOrNull = getServiceOrNull(::soundcloudService)
+
         adapter = SongAdapter(
             filteredSongs,
             onItemClick = { song -> },
             onItemLongPress = { song -> showSongOptionsModal(song) },
             audioPreviewManager = audioPreviewManager,
-            savedSongPlatformIds = null
+            savedSongPlatformIds = null,
+            soundcloudService = scServiceOrNull
         )
         recyclerView.adapter = adapter
     }

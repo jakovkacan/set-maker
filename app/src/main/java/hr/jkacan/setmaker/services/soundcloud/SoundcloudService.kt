@@ -5,9 +5,6 @@ import android.util.Log
 import hr.jkacan.setmaker.BuildConfig
 import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
-import hr.jkacan.setmaker.services.spotify.SpotifySearchResponse
-import hr.jkacan.setmaker.services.spotify.SpotifyTokenResponse
-import hr.jkacan.setmaker.services.spotify.fetchPreviewUrl
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -15,8 +12,13 @@ import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.*
-import kotlin.text.get
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.POST
+import retrofit2.http.Query
+import retrofit2.http.Url
 
 interface SoundcloudApiService {
     @FormUrlEncoded
@@ -67,7 +69,7 @@ class SoundcloudService {
 
     private var cachedToken: String? = null
 
-    private suspend fun getToken(): String {
+    public suspend fun getToken(): String {
         if (cachedToken != null) return cachedToken!!
 
         val authString =
@@ -80,11 +82,6 @@ class SoundcloudService {
         return cachedToken!!
     }
 
-    suspend fun getAuthHeadersForStreaming(): Map<String, String> {
-        val token = getToken()
-        return mapOf("Authorization" to "Bearer $token")
-    }
-
     suspend fun query(queryString: String): List<Song> {
         return try {
             val token = getToken()
@@ -94,11 +91,14 @@ class SoundcloudService {
                 response.mapIndexed { index, dto ->
                     async {
                         val preview = fetchPreviewUrl(dto.streamUrl + 's')
+                        val artist = if (dto.metadataArtist?.isNotBlank()
+                                ?: false
+                        ) dto.metadataArtist else dto.user.username
                         Song(
                             id = index,
                             platformId = dto.urn,
                             title = dto.title,
-                            artist = dto.metadataArtist ?: "",
+                            artist = artist,
                             coverUrl = dto.artworkUrl,
                             provider = SongProvider.SOUNDCLOUD,
                             previewUrl = preview,

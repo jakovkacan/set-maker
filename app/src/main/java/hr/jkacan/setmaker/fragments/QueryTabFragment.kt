@@ -1,5 +1,6 @@
 package hr.jkacan.setmaker.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,7 +18,9 @@ import hr.jkacan.setmaker.adapters.SongAdapter
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.activities.MainActivity
+import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
 import hr.jkacan.setmaker.utils.AudioPreviewManager
+import hr.jkacan.setmaker.utils.getServiceOrNull
 import hr.jkacan.setmaker.utils.showToast
 import hr.jkacan.setmaker.viewmodels.QuerySharedViewModel
 import hr.jkacan.setmaker.viewmodels.SearchResultState
@@ -37,7 +40,8 @@ class QueryTabFragment : Fragment() {
         }
     }
 
-    private val audioPreviewManager = AudioPreviewManager()
+    private lateinit var audioPreviewManager: AudioPreviewManager
+    private lateinit var soundcloudService: SoundcloudService
 
     companion object {
         private const val ARG_PROVIDER = "provider"
@@ -49,6 +53,15 @@ class QueryTabFragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        audioPreviewManager = AudioPreviewManager(context)
+        if (provider == SongProvider.SOUNDCLOUD) {
+            soundcloudService = SoundcloudService()
+        }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,6 +83,7 @@ class QueryTabFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(context)
 
         val songRepository = (requireActivity() as MainActivity).songRepository
+        val scServiceOrNull = getServiceOrNull(::soundcloudService)
 
         adapter = SongAdapter(
             emptyList(),
@@ -80,6 +94,7 @@ class QueryTabFragment : Fragment() {
             onItemLongPress = { song -> },
             audioPreviewManager = audioPreviewManager,
             savedSongPlatformIds = emptyList(),
+            soundcloudService = scServiceOrNull
         )
 
         recyclerView.adapter = adapter

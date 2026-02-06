@@ -8,13 +8,19 @@ data class SoundcloudTokenResponse(
     @SerializedName("expires_in") val expiresIn: Int,
     @SerializedName("scope") val scope: String
 )
+
 data class SoundcloudTrackDto(
     val urn: String,
     val title: String,
     @SerializedName("stream_url") val streamUrl: String?,
     @SerializedName("permalink_url") val permalinkUrl: String?,
     @SerializedName("artwork_url") val artworkUrl: String?,
-    @SerializedName("metadata_artist") val metadataArtist: String?
+    @SerializedName("metadata_artist") val metadataArtist: String?,
+    val user: SoundcloudUser
+)
+
+data class SoundcloudUser(
+    val username: String,
 )
 
 data class SoundcloudStreamResponse(
