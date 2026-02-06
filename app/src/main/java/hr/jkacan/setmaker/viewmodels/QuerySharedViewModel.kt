@@ -1,32 +1,26 @@
 package hr.jkacan.setmaker.viewmodels
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import hr.jkacan.setmaker.activities.MainActivity
 import hr.jkacan.setmaker.data.dao.SongRepository
-import hr.jkacan.setmaker.data.dao.getSongRepository
-import hr.jkacan.setmaker.models.song.Song
+import hr.jkacan.setmaker.data.state.SearchResultState
 import hr.jkacan.setmaker.models.song.SongProvider
+import hr.jkacan.setmaker.services.local.LocalMusicService
 import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
 import hr.jkacan.setmaker.services.spotify.SpotifyService
 import kotlinx.coroutines.launch
 
-// Sealed class to represent the state of the search results
-sealed class SearchResultState {
-    object Loading : SearchResultState()
-    data class Success(val songs: List<Song>, val savedSongsIds: List<String>? = null) :
-        SearchResultState()
+class QuerySharedViewModel(
+    private val songRepository: SongRepository,
+    private val context: Context
+) : ViewModel() {
 
-    data class Error(val message: String) : SearchResultState()
-}
-
-class QuerySharedViewModel(private val songRepository: SongRepository) : ViewModel() {
-
-    // Instantiate your services here
     private val spotifyService = SpotifyService()
     private val soundcloudService = SoundcloudService()
+    private val localMusicService = LocalMusicService(context)
 
     private val _searchResults = MutableLiveData<SearchResultState>()
     val searchResults: LiveData<SearchResultState> = _searchResults
@@ -39,10 +33,7 @@ class QuerySharedViewModel(private val songRepository: SongRepository) : ViewMod
                 val results = when (provider) {
                     SongProvider.SPOTIFY -> spotifyService.query(query)
                     SongProvider.SOUNDCLOUD -> soundcloudService.query(query)
-                    SongProvider.LOCAL -> {
-                        // TODO: Implement local search logic
-                        emptyList()
-                    }
+                    SongProvider.LOCAL -> localMusicService.query(query)
                 }
                 val savedSongsIds: List<String> =
                     songRepository.getAll().mapNotNull { it.platformId }
@@ -53,5 +44,9 @@ class QuerySharedViewModel(private val songRepository: SongRepository) : ViewMod
                     SearchResultState.Error("Failed to fetch results: ${e.message}")
             }
         }
+    }
+
+    fun loadAllLocalFiles() {
+        search("", SongProvider.LOCAL)
     }
 }

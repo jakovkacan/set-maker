@@ -100,17 +100,7 @@ class LibraryFragment : Fragment() {
             }
         }.sortedByDescending { it.dateAdded }
 
-        val scServiceOrNull = getServiceOrNull(::soundcloudService)
-
-        adapter = SongAdapter(
-            filteredSongs,
-            onItemClick = { song -> },
-            onItemLongPress = { song -> showSongOptionsModal(song) },
-            audioPreviewManager = audioPreviewManager,
-            savedSongPlatformIds = null,
-            soundcloudService = scServiceOrNull
-        )
-        recyclerView.adapter = adapter
+        adapter.updateSongs(filteredSongs, null)
     }
 
 

@@ -55,4 +55,6 @@
     <string name="soundcloud">SoundCloud</string>
     <string name="local_files">Local</string>
     <string name="open_in_external_player">Open in External Player</string>
+    <string name="unknown">Unknown</string>
+    <string name="unknown_artist">Unknown Artist</string>
 </resources>

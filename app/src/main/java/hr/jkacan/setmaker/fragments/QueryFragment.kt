@@ -1,11 +1,15 @@
 package hr.jkacan.setmaker.fragments
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -18,6 +22,7 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import hr.jkacan.setmaker.data.dao.SongRepository
 import hr.jkacan.setmaker.models.song.SongProvider
+import hr.jkacan.setmaker.utils.showToast
 import hr.jkacan.setmaker.viewmodels.QuerySharedViewModel
 
 class QueryFragment : Fragment() {
@@ -30,7 +35,7 @@ class QueryFragment : Fragment() {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val songRepository = SongRepository(requireContext())
-                return QuerySharedViewModel(songRepository) as T
+                return QuerySharedViewModel(songRepository, requireContext()) as T
             }
         }
     }
@@ -123,5 +128,45 @@ class QueryFragment : Fragment() {
 
         tabLayout.setSelectedTabIndicatorColor(selectedColor)
         tabLayout.setTabTextColors(unselectedColor, selectedColor)
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Permission granted, load local files
+            sharedViewModel.loadAllLocalFiles()
+        } else {
+            showToast("Storage permission is required to access local music", requireContext())
+        }
+    }
+
+    fun checkAndRequestPermission() {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_AUDIO
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
+        when {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                permission
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                // Permission already granted
+                sharedViewModel.loadAllLocalFiles()
+            }
+
+            shouldShowRequestPermissionRationale(permission) -> {
+                // Show explanation dialog
+                showToast("Permission needed to access your music library", requireContext())
+                requestPermissionLauncher.launch(permission)
+            }
+
+            else -> {
+                // Request permission
+                requestPermissionLauncher.launch(permission)
+            }
+        }
     }
 }

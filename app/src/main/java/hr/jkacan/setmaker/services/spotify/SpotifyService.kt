@@ -9,24 +9,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.*
-import kotlin.text.get
-
-interface SpotifyApiService {
-    @FormUrlEncoded
-    @POST("https://accounts.spotify.com/api/token")
-    suspend fun getAccessToken(
-        @Header("Authorization") auth: String,
-        @Field("grant_type") grantType: String = "client_credentials"
-    ): SpotifyTokenResponse
-
-    @GET("v1/search")
-    suspend fun searchTracks(
-        @Header("Authorization") auth: String,
-        @Query("q") query: String,
-        @Query("type") type: String = "track"
-    ): SpotifySearchResponse
-}
 
 class SpotifyService {
     private val api: SpotifyApiService = Retrofit.Builder()

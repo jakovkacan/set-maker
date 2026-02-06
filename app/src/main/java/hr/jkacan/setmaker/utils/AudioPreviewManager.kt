@@ -1,6 +1,7 @@
 package hr.jkacan.setmaker.utils
 
 import android.content.Context
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.OptIn
@@ -11,6 +12,7 @@ import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.core.net.toUri
 
 class AudioPreviewManager(private val context: Context) {
     private var exoPlayer: ExoPlayer? = null
@@ -19,6 +21,10 @@ class AudioPreviewManager(private val context: Context) {
     private var progressCallback: ((Float) -> Unit)? = null
     private var completionCallback: (() -> Unit)? = null
     private var bufferingCallback: ((Boolean) -> Unit)? = null
+
+    companion object {
+        private const val PREVIEW_DURATION_MS = 30_000L // 30 seconds
+    }
 
     @OptIn(UnstableApi::class)
     fun play(
@@ -47,10 +53,13 @@ class AudioPreviewManager(private val context: Context) {
         val dataSourceFactory = DefaultDataSource.Factory(context, httpFactory)
         val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
 
+        var hasStartedPlayback = false
+
         exoPlayer = ExoPlayer.Builder(context)
             .setMediaSourceFactory(mediaSourceFactory)
             .build()
             .apply {
+                playWhenReady = false
                 val mediaItem = MediaItem.fromUri(url)
                 setMediaItem(mediaItem)
                 prepare()
@@ -59,9 +68,11 @@ class AudioPreviewManager(private val context: Context) {
                     override fun onPlaybackStateChanged(playbackState: Int) {
                         when (playbackState) {
                             Player.STATE_READY -> {
-                                play()
+                                if (!hasStartedPlayback) {
+                                    hasStartedPlayback = true
+                                    handleReadyState(this@apply, url)
+                                }
                                 onBuffering(false)
-                                startProgressTracking()
                             }
 
                             Player.STATE_ENDED -> {
@@ -80,6 +91,12 @@ class AudioPreviewManager(private val context: Context) {
                         }
                     }
 
+                    override fun onIsPlayingChanged(isPlaying: Boolean) {
+                        if (isPlaying) {
+                            startProgressTracking()
+                        }
+                    }
+
                     override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
                         onBuffering(false)
                         onComplete()
@@ -89,6 +106,23 @@ class AudioPreviewManager(private val context: Context) {
             }
     }
 
+    private fun handleReadyState(player: ExoPlayer, url: String) {
+        if (isLocalFile(url)) {
+            val duration = player.duration
+            if (duration > PREVIEW_DURATION_MS) {
+                val startPosition = duration / 3
+                player.seekTo(startPosition)
+            }
+        }
+        player.play()
+    }
+
+    private fun isLocalFile(url: String): Boolean {
+        return url.startsWith("file://") ||
+                url.startsWith("/") ||
+                url.toUri().scheme?.let { it == "file" || it == "content" } == true
+    }
+
     private fun startProgressTracking() {
         handler.post(object : Runnable {
             override fun run() {
@@ -96,8 +130,27 @@ class AudioPreviewManager(private val context: Context) {
                     if (player.isPlaying) {
                         val duration = player.duration
                         if (duration > 0) {
-                            val progress = player.currentPosition.toFloat() / duration.toFloat()
-                            progressCallback?.invoke(progress)
+                            val currentPos = player.currentPosition
+
+                            // For local files longer than preview duration, stop after 30 seconds
+                            if (isLocalFile(currentUrl ?: "") && duration > PREVIEW_DURATION_MS) {
+                                val startPos = duration / 3
+                                val elapsed = currentPos - startPos
+
+                                if (elapsed >= PREVIEW_DURATION_MS) {
+                                    completionCallback?.invoke()
+                                    stop()
+                                    return
+                                }
+
+                                // Calculate progress within the 30-second window
+                                val progress = elapsed.toFloat() / PREVIEW_DURATION_MS.toFloat()
+                                progressCallback?.invoke(progress.coerceIn(0f, 1f))
+                            } else {
+                                // Normal progress for full playback
+                                val progress = currentPos.toFloat() / duration.toFloat()
+                                progressCallback?.invoke(progress)
+                            }
                         }
                         handler.postDelayed(this, 50)
                     }

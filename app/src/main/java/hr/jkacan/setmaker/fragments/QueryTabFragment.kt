@@ -18,12 +18,12 @@ import hr.jkacan.setmaker.adapters.SongAdapter
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.activities.MainActivity
+import hr.jkacan.setmaker.data.state.SearchResultState
 import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
 import hr.jkacan.setmaker.utils.AudioPreviewManager
 import hr.jkacan.setmaker.utils.getServiceOrNull
 import hr.jkacan.setmaker.utils.showToast
 import hr.jkacan.setmaker.viewmodels.QuerySharedViewModel
-import hr.jkacan.setmaker.viewmodels.SearchResultState
 
 class QueryTabFragment : Fragment() {
 
@@ -35,7 +35,10 @@ class QueryTabFragment : Fragment() {
     private val sharedViewModel: QuerySharedViewModel by viewModels({ requireParentFragment() }) {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return QuerySharedViewModel((requireActivity() as MainActivity).songRepository) as T
+                return QuerySharedViewModel(
+                    (requireActivity() as MainActivity).songRepository,
+                    requireContext()
+                ) as T
             }
         }
     }
@@ -104,6 +107,11 @@ class QueryTabFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Load all local files immediately when LOCAL tab is created
+        if (provider == SongProvider.LOCAL) {
+            (requireParentFragment() as QueryFragment).checkAndRequestPermission()
+        }
 
         // Observe the search results from the shared ViewModel
         sharedViewModel.searchResults.observe(viewLifecycleOwner) { state ->

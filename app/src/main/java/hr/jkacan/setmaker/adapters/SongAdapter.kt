@@ -134,7 +134,13 @@ class SongAdapter(
             else if (savedSongPlatformIds!!.contains(song.platformId)) R.drawable.ic_circle_check else R.drawable.ic_add
         )
 
+        // Reset animation state
         holder.coverView.reset()
+
+        // Clear previous images first to prevent recycling issues
+        holder.coverView.getBaseImageView().setImageDrawable(null)
+        holder.coverView.getOverlayImageView().setImageDrawable(null)
+
         if (song.coverUrl.isNullOrBlank()) {
             holder.coverView.getBaseImageView().setImageResource(R.drawable.placeholder_album_cover)
             holder.coverView.getOverlayImageView()
@@ -143,12 +149,16 @@ class SongAdapter(
             holder.coverView.getBaseImageView().load(song.coverUrl) {
                 crossfade(true)
                 placeholder(R.drawable.placeholder_album_cover)
+                error(R.drawable.placeholder_album_cover)
                 transformations(RoundedCornersTransformation(16f))
+                memoryCacheKey("${song.id}_base") // Unique key per song
             }
             holder.coverView.getOverlayImageView().load(song.coverUrl) {
                 crossfade(true)
                 placeholder(R.drawable.placeholder_album_cover)
+                error(R.drawable.placeholder_album_cover)
                 transformations(RoundedCornersTransformation(16f))
+                memoryCacheKey("${song.id}_overlay") // Unique key per song
             }
         }
     }
