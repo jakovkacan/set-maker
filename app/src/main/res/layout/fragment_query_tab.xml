@@ -2,11 +2,35 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/query_results_recycler_view"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" />
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/query_results_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="130dp"
+            android:visibility="gone" />
+
+        <ViewStub
+            android:id="@+id/empty_state_initial_stub"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="130dp"
+            android:inflatedId="@+id/empty_state_initial"
+            android:layout="@layout/state_empty_query_initial" />
+
+        <ViewStub
+            android:id="@+id/empty_state_stub"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="130dp"
+            android:inflatedId="@+id/empty_state_query"
+            android:layout="@layout/state_empty_query" />
+
+    </FrameLayout>
 
     <ProgressBar
         android:id="@+id/loading_indicator"

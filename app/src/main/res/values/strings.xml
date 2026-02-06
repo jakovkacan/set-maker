@@ -57,4 +57,18 @@
     <string name="open_in_external_player">Open in External Player</string>
     <string name="unknown">Unknown</string>
     <string name="unknown_artist">Unknown Artist</string>
+
+    <string name="empty_library">Empty Library</string>
+    <string name="empty_library_title">Your library is empty</string>
+    <string name="empty_library_message">Add songs to get started</string>
+    <string name="no_results_title">No results found</string>
+    <string name="no_results_message">Try a different search query</string>
+    <string name="no_sets_title">No sets available</string>
+    <string name="no_sets_message">Create a set to organize your music</string>
+    <string name="no_results">No Results</string>
+    <string name="no_sets">No Sets</string>
+    <string name="search_prompt">Search for music</string>
+    <string name="search_prompt_title">Start searching</string>
+    <string name="search_prompt_message">Enter a song or artist name to find music</string>
+    <string name="add_set">Add Set</string>
 </resources>

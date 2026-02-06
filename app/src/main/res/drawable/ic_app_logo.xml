@@ -7,11 +7,44 @@
 
     <!-- Circular background -->
     <path
-        android:fillColor="#6200EE"
+        android:fillColor="@color/colorRed"
         android:pathData="M24,2A22,22 0 1,1 2,24 22,22 0 0,1 24,2z" />
 
-    <!-- Simple play triangle -->
+    <!-- Set vector foreground -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M20,16 L20,32 L32,24 z" />
+        android:pathData="M28,17 H15"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:strokeColor="@color/white"
+        android:strokeLineCap="round"/>
+    <path
+        android:pathData="M23,24 H15"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:strokeColor="@color/white"
+        android:strokeLineCap="round"/>
+    <path
+        android:pathData="M23,31 H15"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:strokeColor="@color/white"
+        android:strokeLineCap="round"/>
+    <path
+        android:pathData="M33,28 V17"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:strokeColor="@color/white"
+        android:strokeLineCap="round"/>
+    <path
+        android:pathData="M30,28 m-3,0 a3,3 0,1 1,6 0 a3,3 0,1 1,-6 0"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:strokeColor="@color/white"
+        android:strokeLineCap="round"/>
+
 </vector>

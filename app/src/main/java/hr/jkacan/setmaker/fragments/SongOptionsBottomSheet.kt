@@ -13,7 +13,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import hr.jkacan.setmaker.activities.MainActivity
 import hr.jkacan.setmaker.utils.showToast
 import androidx.core.net.toUri
-import hr.jkacan.setmaker.services.spotify.fetchPreviewUrl
 
 class SongOptionsBottomSheet : BottomSheetDialogFragment() {
 
@@ -44,7 +43,7 @@ class SongOptionsBottomSheet : BottomSheetDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.bottom_sheet_song_options, container, false)
+        return inflater.inflate(R.layout.sheet_song_options, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

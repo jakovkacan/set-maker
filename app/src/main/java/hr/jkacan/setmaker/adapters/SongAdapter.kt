@@ -151,14 +151,14 @@ class SongAdapter(
                 placeholder(R.drawable.placeholder_album_cover)
                 error(R.drawable.placeholder_album_cover)
                 transformations(RoundedCornersTransformation(16f))
-                memoryCacheKey("${song.id}_base") // Unique key per song
+                memoryCacheKey("${song.platformId}_base") // Unique key per song
             }
             holder.coverView.getOverlayImageView().load(song.coverUrl) {
                 crossfade(true)
                 placeholder(R.drawable.placeholder_album_cover)
                 error(R.drawable.placeholder_album_cover)
                 transformations(RoundedCornersTransformation(16f))
-                memoryCacheKey("${song.id}_overlay") // Unique key per song
+                memoryCacheKey("${song.platformId}_overlay") // Unique key per song
             }
         }
     }

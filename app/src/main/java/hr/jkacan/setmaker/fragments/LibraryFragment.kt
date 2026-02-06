@@ -5,9 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.chip.Chip
 import hr.jkacan.setmaker.adapters.SongAdapter
 import hr.jkacan.setmaker.models.song.Song
@@ -22,6 +25,7 @@ import hr.jkacan.setmaker.utils.getServiceOrNull
 class LibraryFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
+    private lateinit var emptyStateLibrary: View
     private lateinit var adapter: SongAdapter
     private lateinit var fabAdd: FloatingActionButton
     private lateinit var chipSpotify: Chip
@@ -44,6 +48,7 @@ class LibraryFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_library, container, false)
 
         recyclerView = view.findViewById(R.id.library_recycler_view)
+        emptyStateLibrary = view.findViewById(R.id.empty_state_library)
         fabAdd = view.findViewById(R.id.fab_add)
         chipSpotify = view.findViewById(R.id.chip_spotify)
         chipSoundcloud = view.findViewById(R.id.chip_soundcloud)
@@ -56,6 +61,8 @@ class LibraryFragment : Fragment() {
 
         // Load all saved songs
         val songs = songRepository.getAll().sortedByDescending { it.dateAdded }
+
+        updateEmptyState(songs)
 
         if (songs.any { it.provider == SongProvider.SOUNDCLOUD }) soundcloudService =
             SoundcloudService()
@@ -79,10 +86,21 @@ class LibraryFragment : Fragment() {
 
 
         fabAdd.setOnClickListener {
-            // Navigate to add song
+            (requireActivity() as MainActivity).findViewById<BottomNavigationView>(R.id.bottom_navigation)
+                .selectedItemId = R.id.nav_query
         }
 
         return view
+    }
+
+    private fun updateEmptyState(songs: List<Song>) {
+        if (songs.isEmpty()) {
+            recyclerView.visibility = View.GONE
+            emptyStateLibrary.visibility = View.VISIBLE
+        } else {
+            recyclerView.visibility = View.VISIBLE
+            emptyStateLibrary.visibility = View.GONE
+        }
     }
 
     private fun filterSongs(songRepository: hr.jkacan.setmaker.data.dao.SongRepository) {
@@ -101,6 +119,7 @@ class LibraryFragment : Fragment() {
         }.sortedByDescending { it.dateAdded }
 
         adapter.updateSongs(filteredSongs, null)
+        updateEmptyState(filteredSongs)
     }
 
 
