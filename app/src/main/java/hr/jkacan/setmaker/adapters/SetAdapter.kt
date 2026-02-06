@@ -8,10 +8,12 @@ import coil.transform.RoundedCornersTransformation
 import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.databinding.ItemSetBinding
 import hr.jkacan.setmaker.models.set.SetItem
+import hr.jkacan.setmaker.models.song.Song
 
 class SetAdapter(
     private val sets: List<SetItem>,
-    private val onItemClick: (SetItem) -> Unit
+    private val onItemClick: (SetItem) -> Unit,
+    private val onItemLongPress: (SetItem) -> Unit,
 ) : RecyclerView.Adapter<SetAdapter.SetViewHolder>() {
 
     inner class SetViewHolder(private val binding: ItemSetBinding) :
@@ -24,18 +26,27 @@ class SetAdapter(
                     onItemClick(sets[position])
                 }
             }
+
+            binding.root.setOnLongClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onItemLongPress(sets[position])
+                }
+                true
+            }
         }
 
         fun bind(set: SetItem) {
             binding.setName.text = set.name
 
             // Load cover image
-            if (set.coverUrl.isNullOrBlank()) {
+            if (set.coverPath.isNullOrBlank()) {
                 binding.setCoverImage.setImageResource(R.drawable.placeholder_set_cover)
             } else {
-                binding.setCoverImage.load(set.coverUrl) {
+                binding.setCoverImage.load(set.coverPath) {
                     crossfade(true)
                     placeholder(R.drawable.placeholder_set_cover)
+                    error(R.drawable.placeholder_set_cover)
                     transformations(
                         RoundedCornersTransformation(
                             16f,

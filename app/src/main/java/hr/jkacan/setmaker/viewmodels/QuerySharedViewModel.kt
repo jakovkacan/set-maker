@@ -15,13 +15,10 @@ import kotlinx.coroutines.launch
 
 class QuerySharedViewModel(
     private val songRepository: SongRepository,
-    private val context: Context
+    private val spotifyService: SpotifyService,
+    private val soundcloudService: SoundcloudService,
+    private val localMusicService: LocalMusicService,
 ) : ViewModel() {
-
-    private val spotifyService = SpotifyService()
-    private val soundcloudService = SoundcloudService()
-    private val localMusicService = LocalMusicService(context)
-
     private val _searchResults = MutableLiveData<SearchResultState>()
     val searchResults: LiveData<SearchResultState> = _searchResults
 

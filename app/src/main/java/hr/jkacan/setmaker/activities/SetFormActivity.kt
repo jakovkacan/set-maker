@@ -1,18 +1,32 @@
 package hr.jkacan.setmaker.activities
 
-import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import coil.load
 import hr.jkacan.setmaker.R
+import hr.jkacan.setmaker.SetMakerApplication
+import hr.jkacan.setmaker.data.dao.SetRepository
 import hr.jkacan.setmaker.databinding.ActivitySetFormBinding
+import hr.jkacan.setmaker.models.set.SetItem
+import hr.jkacan.setmaker.utils.ThemeHelper
+import hr.jkacan.setmaker.utils.showToast
+import java.util.Date
+import kotlin.toString
+import androidx.core.net.toUri
 
 class SetFormActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySetFormBinding
+    private lateinit var setRepository: SetRepository
     private var selectedImageUri: Uri? = null
+    private var existingSet: SetItem? = null
+    private var isEditMode = false
 
     private val imagePickerLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -27,18 +41,49 @@ class SetFormActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        ThemeHelper.applyTheme(this)
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
         binding = ActivitySetFormBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setRepository = (application as SetMakerApplication).setRepository
+
+        loadSetData()
         setupViews()
         setupClickListeners()
     }
 
+    private fun loadSetData() {
+        val setId = intent.getIntExtra("SET_ID", -1)
+        if (setId != -1) {
+            existingSet = setRepository.getById(setId)
+            existingSet?.let { set ->
+                isEditMode = true
+                binding.setNameInput.setText(set.name)
+                set.coverPath?.let { path ->
+                    selectedImageUri = path.toUri()
+                    binding.setCoverPreview.load(selectedImageUri) {
+                        crossfade(true)
+                    }
+                    binding.cameraIcon.alpha = 0f
+                }
+            }
+        }
+    }
+
     private fun setupViews() {
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
-            title = getString(R.string.create_set)
+            title = getString(if (isEditMode) R.string.edit_set else R.string.create_set)
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbar) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.updatePadding(top = insets.top)
+            windowInsets
         }
     }
 
@@ -47,26 +92,44 @@ class SetFormActivity : AppCompatActivity() {
             imagePickerLauncher.launch("image/*")
         }
 
-//        binding.saveButton.setOnClickListener {
-//            saveSet()
-//        }
+        binding.saveButton.setOnClickListener {
+            saveSet()
+        }
     }
 
     private fun saveSet() {
-//        val setName = binding.setNameInput.text?.toString()?.trim()
+        val setName = binding.setNameInput.text?.toString()?.trim()
 
-//        if (setName.isNullOrBlank()) {
-//            binding.setNameInput.error = getString(R.string.error_set_name_required)
-//            return
-//        }
+        if (setName.isNullOrBlank()) {
+            binding.setNameInput.error = getString(R.string.error_set_name_required)
+            return
+        }
 
-        // TODO: Implement saving logic
-        // - Upload image to storage
-        // - Create SetItem with name and coverUrl
-        // - Save to database/repository
+        val set = if (isEditMode && existingSet != null) {
+            existingSet!!.copy(
+                name = setName,
+                coverPath = selectedImageUri.toString(),
+                dateUpdated = Date()
+            )
+        } else {
+            SetItem(
+                id = null,
+                name = setName,
+                coverPath = selectedImageUri.toString(),
+                dateAdded = Date(),
+                dateUpdated = Date()
+            )
+        }
 
-//        Toast.makeText(this, "Set saved: $setName", Toast.LENGTH_SHORT).show()
-        setResult(Activity.RESULT_OK)
+        if (isEditMode) {
+            setRepository.update(set)
+            showToast("Set updated: $setName", this)
+        } else {
+            setRepository.insert(set)
+            showToast("Set saved: $setName", this)
+        }
+
+        setResult(RESULT_OK)
         finish()
     }
 

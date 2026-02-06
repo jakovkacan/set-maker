@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import hr.jkacan.setmaker.SetMakerApplication
 import hr.jkacan.setmaker.adapters.SongAdapter
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.activities.MainActivity
@@ -36,9 +37,12 @@ class QueryTabFragment : Fragment() {
     private val sharedViewModel: QuerySharedViewModel by viewModels({ requireParentFragment() }) {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                val application = requireActivity().application as SetMakerApplication
                 return QuerySharedViewModel(
-                    (requireActivity() as MainActivity).songRepository,
-                    requireContext()
+                    application.songRepository,
+                    application.spotifyService,
+                    application.soundcloudService,
+                    application.localMusicService
                 ) as T
             }
         }
@@ -61,9 +65,10 @@ class QueryTabFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        audioPreviewManager = AudioPreviewManager(context)
+        val application = requireActivity().application as SetMakerApplication
+        audioPreviewManager = application.audioPreviewManager
         if (provider == SongProvider.SOUNDCLOUD) {
-            soundcloudService = SoundcloudService()
+            soundcloudService = application.soundcloudService
         }
     }
 

@@ -9,10 +9,10 @@ import android.view.ViewGroup
 import androidx.core.content.FileProvider
 import hr.jkacan.setmaker.models.song.Song
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import hr.jkacan.setmaker.activities.MainActivity
 import hr.jkacan.setmaker.databinding.SheetSongOptionsBinding
 import hr.jkacan.setmaker.utils.showToast
 import androidx.core.net.toUri
+import hr.jkacan.setmaker.SetMakerApplication
 import java.io.File
 
 class SongOptionsBottomSheet : BottomSheetDialogFragment() {
@@ -99,7 +99,7 @@ class SongOptionsBottomSheet : BottomSheetDialogFragment() {
         }
 
         binding.optionDelete.setOnClickListener {
-            (requireActivity() as MainActivity).songRepository.delete(song.id!!)
+            (requireActivity().application as SetMakerApplication).songRepository.delete(song.id!!)
             onSongDeleted?.invoke()
             dismiss()
         }

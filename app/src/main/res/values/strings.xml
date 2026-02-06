@@ -77,4 +77,7 @@
     <string name="set_name">Set Name</string>
     <string name="create_set">Create Set</string>
     <string name="error_set_name_required">Set name is required</string>
+    <string name="set_form_title_edit">Edit Set</string>
+    <string name="edit_set">Edit Set</string>
+    <string name="set_options">Set Options</string>
 </resources>

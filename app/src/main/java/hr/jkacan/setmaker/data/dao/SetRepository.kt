@@ -15,7 +15,7 @@ class SetRepository(context: Context) : Repository<SetItem> {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(DatabaseContract.SetEntry.COLUMN_NAME, item.name)
-            put(DatabaseContract.SetEntry.COLUMN_COVER_URL, item.coverUrl)
+            put(DatabaseContract.SetEntry.COLUMN_COVER_URL, item.coverPath)
             put(DatabaseContract.SetEntry.COLUMN_DATE_ADDED, formatDate(Date()))
             put(DatabaseContract.SetEntry.COLUMN_DATE_UPDATED, formatDate(Date()))
         }
@@ -26,7 +26,7 @@ class SetRepository(context: Context) : Repository<SetItem> {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(DatabaseContract.SetEntry.COLUMN_NAME, item.name)
-            put(DatabaseContract.SetEntry.COLUMN_COVER_URL, item.coverUrl)
+            put(DatabaseContract.SetEntry.COLUMN_COVER_URL, item.coverPath)
             put(DatabaseContract.SetEntry.COLUMN_DATE_ADDED, formatDate(item.dateAdded))
             put(DatabaseContract.SetEntry.COLUMN_DATE_UPDATED, formatDate(Date()))
         }
@@ -117,7 +117,7 @@ class SetRepository(context: Context) : Repository<SetItem> {
         return SetItem(
             id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.SetEntry.COLUMN_ID)),
             name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SetEntry.COLUMN_NAME)),
-            coverUrl = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SetEntry.COLUMN_COVER_URL)),
+            coverPath = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseContract.SetEntry.COLUMN_COVER_URL)),
             dateAdded = parseStringAsDate(
                 cursor.getString(
                     cursor.getColumnIndexOrThrow(

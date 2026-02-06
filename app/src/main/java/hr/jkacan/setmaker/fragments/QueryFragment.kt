@@ -20,6 +20,7 @@ import hr.jkacan.setmaker.adapters.QueryPagerAdapter
 import hr.jkacan.setmaker.R
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import hr.jkacan.setmaker.SetMakerApplication
 import hr.jkacan.setmaker.data.dao.SongRepository
 import hr.jkacan.setmaker.databinding.FragmentQueryBinding
 import hr.jkacan.setmaker.models.song.SongProvider
@@ -34,8 +35,13 @@ class QueryFragment : Fragment() {
     private val sharedViewModel: QuerySharedViewModel by viewModels {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val songRepository = SongRepository(requireContext())
-                return QuerySharedViewModel(songRepository, requireContext()) as T
+                val application = requireActivity().application as SetMakerApplication
+                return QuerySharedViewModel(
+                    application.songRepository,
+                    application.spotifyService,
+                    application.soundcloudService,
+                    application.localMusicService
+                ) as T
             }
         }
     }

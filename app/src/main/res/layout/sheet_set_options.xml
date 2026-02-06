@@ -10,46 +10,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="16dp"
-        android:text="@string/song_options"
+        android:text="@string/set_options"
         android:textColor="@color/text_primary"
         android:textSize="18sp"
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/option_add_to_set"
+        android:id="@+id/option_edit_set"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackground"
         android:drawablePadding="16dp"
         android:padding="16dp"
-        android:text="@string/add_to_set"
+        android:text="@string/edit_set"
         android:textColor="@color/text_primary"
         android:textSize="16sp"
-        app:drawableStartCompat="@drawable/ic_add" />
-
-    <TextView
-        android:id="@+id/option_external_player"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:drawablePadding="16dp"
-        android:padding="16dp"
-        android:text="@string/open_in_external_player"
-        android:textColor="@color/text_primary"
-        android:textSize="16sp"
-        app:drawableStartCompat="@drawable/ic_play" />
-
-    <TextView
-        android:id="@+id/option_share"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:drawablePadding="16dp"
-        android:padding="16dp"
-        android:text="@string/share"
-        android:textColor="@color/text_primary"
-        android:textSize="16sp"
-        app:drawableStartCompat="@drawable/ic_share" />
+        app:drawableStartCompat="@drawable/ic_edit" />
 
     <TextView
         android:id="@+id/option_delete"

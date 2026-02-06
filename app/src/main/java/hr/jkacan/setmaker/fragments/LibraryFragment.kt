@@ -12,6 +12,7 @@ import hr.jkacan.setmaker.adapters.SongAdapter
 import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.R
+import hr.jkacan.setmaker.SetMakerApplication
 import hr.jkacan.setmaker.activities.MainActivity
 import hr.jkacan.setmaker.data.dao.SongRepository
 import hr.jkacan.setmaker.databinding.FragmentLibraryBinding
@@ -26,11 +27,14 @@ class LibraryFragment : Fragment() {
 
     private lateinit var adapter: SongAdapter
     private lateinit var audioPreviewManager: AudioPreviewManager
+    private lateinit var songRepository: SongRepository
     private lateinit var soundcloudService: SoundcloudService
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        audioPreviewManager = AudioPreviewManager(context)
+        val application = requireActivity().application as SetMakerApplication
+        audioPreviewManager = application.audioPreviewManager
+        songRepository = application.songRepository
     }
 
     override fun onCreateView(
@@ -47,16 +51,14 @@ class LibraryFragment : Fragment() {
 
         binding.libraryRecyclerView.layoutManager = LinearLayoutManager(context)
 
-        // Get the SongRepository from MainActivity
-        val songRepository = (requireActivity() as MainActivity).songRepository
-
         // Load all saved songs
         val songs = songRepository.getAll().sortedByDescending { it.dateAdded }
 
         updateEmptyState(songs)
 
         if (songs.any { it.provider == SongProvider.SOUNDCLOUD }) {
-            soundcloudService = SoundcloudService()
+            soundcloudService =
+                (requireActivity().application as SetMakerApplication).soundcloudService
         }
 
         val scServiceOrNull = getServiceOrNull(::soundcloudService)
@@ -141,7 +143,6 @@ class LibraryFragment : Fragment() {
     }
 
     private fun refreshSongs() {
-        val songRepository = (requireActivity() as MainActivity).songRepository
         filterSongs(songRepository)
     }
 
