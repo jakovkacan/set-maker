@@ -169,4 +169,10 @@ class QueryFragment : Fragment() {
             }
         }
     }
+
+    fun focusSearchBar() {
+        searchBar.requestFocus()
+        val imm = requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.showSoftInput(searchBar, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+    }
 }

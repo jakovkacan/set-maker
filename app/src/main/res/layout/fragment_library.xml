@@ -5,77 +5,98 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/background"
+        app:elevation="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_scrollFlags="scroll|enterAlways">
+
+            <EditText
+                android:id="@+id/search_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="12dp"
+                android:hint="@string/filter_songs"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:padding="16dp" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group_provider"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                app:selectionRequired="false"
+                app:singleSelection="false">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_spotify"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/spotify" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_soundcloud"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/soundcloud" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_local"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/local_files" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+        </LinearLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:orientation="vertical"
         android:paddingBottom="130dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chip_group_provider"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/library_recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            app:selectionRequired="false"
-            app:singleSelection="false">
+            android:layout_height="match_parent" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_spotify"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/spotify" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_soundcloud"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/soundcloud" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_local"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/local_files" />
-
-        </com.google.android.material.chip.ChipGroup>
-
-        <FrameLayout
+        <include
+            android:id="@+id/empty_state_library"
+            layout="@layout/state_empty_library"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_marginBottom="130dp"
+            android:visibility="gone" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/library_recycler_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <include
-                android:id="@+id/empty_state_library"
-                layout="@layout/state_empty_library"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginBottom="130dp"
-                android:visibility="gone" />
-
-        </FrameLayout>
-
-    </LinearLayout>
+    </FrameLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="150dp"
         android:layout_marginEnd="16dp"
-        android:visibility="visible"
+        android:layout_marginBottom="150dp"
+        android:background="?attr/primaryColor"
         android:contentDescription="@string/add_song"
         android:src="@drawable/ic_plus"
-        android:background="?attr/primaryColor"
+        android:visibility="visible"
         app:backgroundTint="?attr/primaryColor"
         app:tint="@color/white" />
 

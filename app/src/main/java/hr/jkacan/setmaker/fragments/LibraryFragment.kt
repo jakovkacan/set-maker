@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +18,7 @@ import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import hr.jkacan.setmaker.activities.MainActivity
+import hr.jkacan.setmaker.data.dao.SongRepository
 import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
 import hr.jkacan.setmaker.utils.AudioPreviewManager
 import hr.jkacan.setmaker.utils.getServiceOrNull
@@ -28,6 +29,7 @@ class LibraryFragment : Fragment() {
     private lateinit var emptyStateLibrary: View
     private lateinit var adapter: SongAdapter
     private lateinit var fabAdd: FloatingActionButton
+    private lateinit var searchBar: EditText
     private lateinit var chipSpotify: Chip
     private lateinit var chipSoundcloud: Chip
     private lateinit var chipLocal: Chip
@@ -39,7 +41,6 @@ class LibraryFragment : Fragment() {
         audioPreviewManager = AudioPreviewManager(context)
     }
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -50,6 +51,7 @@ class LibraryFragment : Fragment() {
         recyclerView = view.findViewById(R.id.library_recycler_view)
         emptyStateLibrary = view.findViewById(R.id.empty_state_library)
         fabAdd = view.findViewById(R.id.fab_add)
+        searchBar = view.findViewById(R.id.search_bar)
         chipSpotify = view.findViewById(R.id.chip_spotify)
         chipSoundcloud = view.findViewById(R.id.chip_soundcloud)
         chipLocal = view.findViewById(R.id.chip_local)
@@ -84,6 +86,14 @@ class LibraryFragment : Fragment() {
         chipSoundcloud.setOnCheckedChangeListener { _, _ -> filterSongs(songRepository) }
         chipLocal.setOnCheckedChangeListener { _, _ -> filterSongs(songRepository) }
 
+        searchBar.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                filterSongs(songRepository)
+                true
+            } else {
+                false
+            }
+        }
 
         fabAdd.setOnClickListener {
             (requireActivity() as MainActivity).findViewById<BottomNavigationView>(R.id.bottom_navigation)
@@ -103,20 +113,32 @@ class LibraryFragment : Fragment() {
         }
     }
 
-    private fun filterSongs(songRepository: hr.jkacan.setmaker.data.dao.SongRepository) {
+    private fun filterSongs(songRepository: SongRepository) {
         val selectedProviders = mutableListOf<SongProvider>()
+        val filterQuery = searchBar.text.toString().trim().lowercase()
 
         if (chipSpotify.isChecked) selectedProviders.add(SongProvider.SPOTIFY)
         if (chipSoundcloud.isChecked) selectedProviders.add(SongProvider.SOUNDCLOUD)
         if (chipLocal.isChecked) selectedProviders.add(SongProvider.LOCAL)
 
-        val filteredSongs = if (selectedProviders.isEmpty()) {
-            songRepository.getAll()
-        } else {
-            selectedProviders.flatMap { provider ->
-                songRepository.getSongsByProvider(provider)
+        // Start with all songs
+        var filteredSongs = songRepository.getAll()
+
+        // Filter by provider if any selected
+        if (selectedProviders.isNotEmpty()) {
+            filteredSongs = filteredSongs.filter { it.provider in selectedProviders }
+        }
+
+        // Apply text filter if query exists
+        if (filterQuery.isNotEmpty()) {
+            filteredSongs = filteredSongs.filter { song ->
+                song.title.lowercase().contains(filterQuery) ||
+                        song.artist.lowercase().contains(filterQuery)
             }
-        }.sortedByDescending { it.dateAdded }
+        }
+
+        // Sort by date added
+        filteredSongs = filteredSongs.sortedByDescending { it.dateAdded }
 
         adapter.updateSongs(filteredSongs, null)
         updateEmptyState(filteredSongs)

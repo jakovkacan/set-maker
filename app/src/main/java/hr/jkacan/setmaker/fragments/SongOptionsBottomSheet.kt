@@ -7,12 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.FileProvider
 import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.models.song.Song
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import hr.jkacan.setmaker.activities.MainActivity
 import hr.jkacan.setmaker.utils.showToast
 import androidx.core.net.toUri
+import java.io.File
 
 class SongOptionsBottomSheet : BottomSheetDialogFragment() {
 
@@ -56,12 +58,34 @@ class SongOptionsBottomSheet : BottomSheetDialogFragment() {
 
         view.findViewById<TextView>(R.id.option_external_player).setOnClickListener {
             song.songUrl?.let { url ->
-                val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                val intent = if (url.startsWith("/")) {
+                    // Local file path
+                    val file = File(url)
+                    val uri = FileProvider.getUriForFile(
+                        requireContext(),
+                        "${requireContext().packageName}.fileprovider",
+                        file
+                    )
+                    Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(uri, "audio/*")
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                } else {
+                    val uri = url.toUri()
+                    if (uri.scheme == "content") {
+                        Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(uri, "audio/*")
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                    } else {
+                        // Network URL
+                        Intent(Intent.ACTION_VIEW, uri)
+                    }
+                }
                 try {
                     startActivity(intent)
                 } catch (e: ActivityNotFoundException) {
-                    // Handle case where no app can handle the URL
-                    showToast("No app found to open this link", requireContext())
+                    showToast("No app found to play this audio file", requireContext())
                 }
             }
             dismiss()

@@ -36,6 +36,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var setGraphRepository: SetGraphRepository
 
     private var currentThemeValue: String? = null
+    private var lastQueryTapTime = 0L
+    private val DOUBLE_TAP_DELAY = 300L // milliseconds
 
     private val prefListener = OnSharedPreferenceChangeListener { _, key ->
         if (key == "theme") {
@@ -78,7 +80,20 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.nav_query -> {
-                    loadFragment(QueryFragment())
+                    val currentTime = System.currentTimeMillis()
+                    val isDoubleTap = currentTime - lastQueryTapTime < DOUBLE_TAP_DELAY
+                    lastQueryTapTime = currentTime
+
+                    if (isDoubleTap) {
+                        // Double tap detected - focus search bar
+                        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+                        if (currentFragment is QueryFragment) {
+                            currentFragment.focusSearchBar()
+                        }
+                    } else {
+                        // Single tap - load fragment normally
+                        loadFragment(QueryFragment())
+                    }
                     true
                 }
 
