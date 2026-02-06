@@ -1,21 +1,18 @@
 package hr.jkacan.setmaker.adapters
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.transform.RoundedCornersTransformation
 import hr.jkacan.setmaker.R
+import hr.jkacan.setmaker.databinding.ItemSongBinding
 import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
 import hr.jkacan.setmaker.utils.AudioPreviewManager
-import hr.jkacan.setmaker.views.AnimatedCoverView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,30 +24,24 @@ class SongAdapter(
     private val onItemLongPress: (Song) -> Unit,
     private val audioPreviewManager: AudioPreviewManager,
     private val soundcloudService: SoundcloudService? = null
-
 ) : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
 
     private var currentPlayingPosition: Int = RecyclerView.NO_POSITION
 
-    inner class SongViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val coverView: AnimatedCoverView = itemView.findViewById(R.id.song_cover)
-        val title: TextView = itemView.findViewById(R.id.song_title)
-        val artist: TextView = itemView.findViewById(R.id.song_artist)
-        val providerIcon: ImageView = itemView.findViewById(R.id.provider_icon)
-        private val bufferingIndicator: com.google.android.material.progressindicator.CircularProgressIndicator =
-            itemView.findViewById(R.id.buffering_indicator)
+    inner class SongViewHolder(private val binding: ItemSongBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
         init {
-            coverView.setBufferingIndicator(bufferingIndicator)
+            binding.songCover.setBufferingIndicator(binding.bufferingIndicator)
 
-            itemView.setOnClickListener {
+            binding.root.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     onItemClick(songs[position])
                 }
             }
 
-            itemView.setOnLongClickListener {
+            binding.root.setOnLongClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     onItemLongPress(songs[position])
@@ -58,33 +49,73 @@ class SongAdapter(
                 true
             }
 
-            coverView.setOnClickListener {
+            binding.songCover.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    handleCoverClick(songs[position], coverView)
+                    handleCoverClick(songs[position])
                 }
             }
         }
 
-        private fun handleCoverClick(song: Song, coverView: AnimatedCoverView) {
+        fun bind(song: Song) {
+            binding.songTitle.text = song.title
+            binding.songArtist.text = song.artist
+
+            // Set provider icon
+            val providerIcon = when (song.provider) {
+                SongProvider.SPOTIFY -> R.drawable.ic_spotify
+                SongProvider.SOUNDCLOUD -> R.drawable.ic_soundcloud
+                SongProvider.LOCAL -> R.drawable.ic_local_file
+            }
+            binding.providerIcon.setImageResource(
+                if (savedSongPlatformIds == null) providerIcon
+                else if (savedSongPlatformIds!!.contains(song.platformId)) R.drawable.ic_circle_check else R.drawable.ic_add
+            )
+
+            // Reset animation state
+            binding.songCover.reset()
+
+            if (song.coverUrl.isNullOrBlank()) {
+                binding.songCover.getBaseImageView()
+                    .setImageResource(R.drawable.placeholder_album_cover)
+                binding.songCover.getOverlayImageView()
+                    .setImageResource(R.drawable.placeholder_album_cover)
+            } else {
+                binding.songCover.getBaseImageView().load(song.coverUrl) {
+                    crossfade(true)
+                    placeholder(R.drawable.placeholder_album_cover)
+                    error(R.drawable.placeholder_album_cover)
+                    transformations(RoundedCornersTransformation(16f))
+                }
+                binding.songCover.getOverlayImageView().load(song.coverUrl) {
+                    crossfade(true)
+                    placeholder(R.drawable.placeholder_album_cover)
+                    error(R.drawable.placeholder_album_cover)
+                    transformations(RoundedCornersTransformation(16f))
+                }
+            }
+        }
+
+        private fun handleCoverClick(song: Song) {
             val previewUrl = song.previewUrl
             if (previewUrl.isNullOrBlank()) return
 
             if (audioPreviewManager.isPlaying(previewUrl)) {
                 audioPreviewManager.stop()
-                coverView.reset()
+                binding.songCover.reset()
                 currentPlayingPosition = RecyclerView.NO_POSITION
             } else {
                 // Reset previously playing item's animation
-                if (currentPlayingPosition != RecyclerView.NO_POSITION && currentPlayingPosition != position) {
+                if (currentPlayingPosition != RecyclerView.NO_POSITION && currentPlayingPosition != adapterPosition) {
                     notifyItemChanged(currentPlayingPosition)
                 }
 
-                currentPlayingPosition = position
-                coverView.showBuffering()
+                currentPlayingPosition = adapterPosition
+                binding.songCover.showBuffering()
 
-                val scope = (itemView.context as? androidx.lifecycle.LifecycleOwner)?.lifecycleScope
-                    ?: CoroutineScope(Dispatchers.Main)
+                val scope =
+                    (binding.root.context as? androidx.lifecycle.LifecycleOwner)?.lifecycleScope
+                        ?: CoroutineScope(Dispatchers.Main)
 
                 scope.launch {
                     val authToken = if (song.provider == SongProvider.SOUNDCLOUD) {
@@ -97,13 +128,13 @@ class SongAdapter(
                         url = previewUrl,
                         authToken = authToken,
                         onBuffering = { isBuffering ->
-                            if (isBuffering) coverView.showBuffering() else coverView.hideBuffering()
+                            if (isBuffering) binding.songCover.showBuffering() else binding.songCover.hideBuffering()
                         },
                         onProgress = { progress ->
-                            coverView.setProgress(progress)
+                            binding.songCover.setProgress(progress)
                         },
                         onComplete = {
-                            coverView.reset()
+                            binding.songCover.reset()
                             currentPlayingPosition = RecyclerView.NO_POSITION
                         }
                     )
@@ -113,54 +144,12 @@ class SongAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_song, parent, false)
-        return SongViewHolder(view)
+        val binding = ItemSongBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return SongViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: SongViewHolder, position: Int) {
-        val song = songs[position]
-        holder.title.text = song.title
-        holder.artist.text = song.artist
-
-        // Set provider icon
-        val providerIcon = when (song.provider) {
-            SongProvider.SPOTIFY -> R.drawable.ic_spotify
-            SongProvider.SOUNDCLOUD -> R.drawable.ic_soundcloud
-            SongProvider.LOCAL -> R.drawable.ic_local_file
-        }
-        holder.providerIcon.setImageResource(
-            if (savedSongPlatformIds == null) providerIcon
-            else if (savedSongPlatformIds!!.contains(song.platformId)) R.drawable.ic_circle_check else R.drawable.ic_add
-        )
-
-        // Reset animation state
-        holder.coverView.reset()
-
-        // Clear previous images first to prevent recycling issues
-//        holder.coverView.getBaseImageView().setImageDrawable(null)
-//        holder.coverView.getOverlayImageView().setImageDrawable(null)
-
-        if (song.coverUrl.isNullOrBlank()) {
-            holder.coverView.getBaseImageView().setImageResource(R.drawable.placeholder_album_cover)
-            holder.coverView.getOverlayImageView()
-                .setImageResource(R.drawable.placeholder_album_cover)
-        } else {
-            holder.coverView.getBaseImageView().load(song.coverUrl) {
-                crossfade(true)
-                placeholder(R.drawable.placeholder_album_cover)
-                error(R.drawable.placeholder_album_cover)
-                transformations(RoundedCornersTransformation(16f))
-//                memoryCacheKey("${song.platformId}_base") // Unique key per song
-            }
-            holder.coverView.getOverlayImageView().load(song.coverUrl) {
-                crossfade(true)
-                placeholder(R.drawable.placeholder_album_cover)
-                error(R.drawable.placeholder_album_cover)
-                transformations(RoundedCornersTransformation(16f))
-//                memoryCacheKey("${song.platformId}_overlay") // Unique key per song
-            }
-        }
+        holder.bind(songs[position])
     }
 
     override fun getItemCount(): Int = songs.size
@@ -196,7 +185,6 @@ class SongAdapter(
             notifyItemChanged(position)
         }
     }
-
 
     private class SongDiffCallback(
         private val oldList: List<Song>,

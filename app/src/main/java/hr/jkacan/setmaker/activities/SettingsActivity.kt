@@ -4,22 +4,22 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import hr.jkacan.setmaker.R
+import hr.jkacan.setmaker.databinding.ActivitySettingsBinding
 import hr.jkacan.setmaker.utils.ThemeHelper
 
 class SettingsActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivitySettingsBinding
     private lateinit var prefs: SharedPreferences
 
     private val prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == "theme") {
-            // Restart activity to apply theme immediately
             recreate()
         }
     }
@@ -28,16 +28,16 @@ class SettingsActivity : AppCompatActivity() {
         ThemeHelper.applyTheme(this)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_settings)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        binding = ActivitySettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = getString(R.string.settings)
 
-        ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, windowInsets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbar) { view, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            // Apply top inset as padding to the toolbar
             view.updatePadding(top = insets.top)
             windowInsets
         }
@@ -75,7 +75,6 @@ class SettingsActivity : AppCompatActivity() {
             key: String?
         ) {
             if (key == "theme") {
-                // Restart activity to apply theme immediately
                 activity?.recreate()
             }
         }

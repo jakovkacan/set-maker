@@ -5,15 +5,18 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
-import hr.jkacan.setmaker.R
+import hr.jkacan.setmaker.databinding.ActivitySplashBinding
 
 class SplashActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivitySplashBinding
     private val SPLASH_DELAY = 2000L // 2 seconds
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
+
+        binding = ActivitySplashBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // Navigate to MainActivity after delay
         Handler(Looper.getMainLooper()).postDelayed({

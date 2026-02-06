@@ -1,14 +1,12 @@
 package hr.jkacan.setmaker.adapters
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.transform.RoundedCornersTransformation
 import hr.jkacan.setmaker.R
+import hr.jkacan.setmaker.databinding.ItemSetBinding
 import hr.jkacan.setmaker.models.set.SetItem
 
 class SetAdapter(
@@ -16,47 +14,48 @@ class SetAdapter(
     private val onItemClick: (SetItem) -> Unit
 ) : RecyclerView.Adapter<SetAdapter.SetViewHolder>() {
 
-    inner class SetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val coverImage: ImageView = itemView.findViewById(R.id.set_cover_image)
-        val setName: TextView = itemView.findViewById(R.id.set_name)
+    inner class SetViewHolder(private val binding: ItemSetBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
         init {
-            itemView.setOnClickListener {
+            binding.root.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     onItemClick(sets[position])
                 }
             }
         }
+
+        fun bind(set: SetItem) {
+            binding.setName.text = set.name
+
+            // Load cover image
+            if (set.coverUrl.isNullOrBlank()) {
+                binding.setCoverImage.setImageResource(R.drawable.placeholder_set_cover)
+            } else {
+                binding.setCoverImage.load(set.coverUrl) {
+                    crossfade(true)
+                    placeholder(R.drawable.placeholder_set_cover)
+                    transformations(
+                        RoundedCornersTransformation(
+                            16f,
+                            16f,
+                            0f,
+                            0f
+                        )
+                    )
+                }
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SetViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_set, parent, false)
-        return SetViewHolder(view)
+        val binding = ItemSetBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return SetViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: SetViewHolder, position: Int) {
-        val set = sets[position]
-        holder.setName.text = set.name
-
-        // Load cover image
-        if (set.coverUrl.isNullOrBlank()) {
-            holder.coverImage.setImageResource(R.drawable.placeholder_set_cover)
-        } else {
-            holder.coverImage.load(set.coverUrl) {
-                crossfade(true)
-                placeholder(R.drawable.placeholder_set_cover)
-                transformations(
-                    RoundedCornersTransformation(
-                        16f,
-                        16f,
-                        0f,
-                        0f
-                    )
-                )
-            }
-        }
+        holder.bind(sets[position])
     }
 
     override fun getItemCount(): Int = sets.size

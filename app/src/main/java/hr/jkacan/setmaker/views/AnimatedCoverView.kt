@@ -9,6 +9,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import androidx.core.graphics.withClip
 
 class AnimatedCoverView @JvmOverloads constructor(
     context: Context,
@@ -84,10 +85,9 @@ class AnimatedCoverView @JvmOverloads constructor(
                 val revealHeight = (height * clipProgress).toInt()
                 clipRect.set(0, height - revealHeight, width, height)
 
-                canvas.save()
-                canvas.clipRect(clipRect)
-                super.onDraw(canvas)
-                canvas.restore()
+                canvas.withClip(clipRect) {
+                    super.onDraw(this)
+                }
             }
         }
     }

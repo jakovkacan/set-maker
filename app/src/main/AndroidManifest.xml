@@ -5,7 +5,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <!-- For Android 12 and below -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
 
     <application
@@ -18,8 +19,8 @@
 
         <activity
             android:name="hr.jkacan.setmaker.activities.SplashActivity"
-            android:theme="@style/SplashTheme"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -28,8 +29,8 @@
 
         <activity
             android:name="hr.jkacan.setmaker.activities.MainActivity"
-            android:windowSoftInputMode="adjustPan"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan" />
 
         <activity
             android:name="hr.jkacan.setmaker.activities.EditorActivity"
@@ -38,6 +39,11 @@
 
         <activity
             android:name="hr.jkacan.setmaker.activities.SettingsActivity"
+            android:exported="false"
+            android:parentActivityName="hr.jkacan.setmaker.activities.MainActivity" />
+
+        <activity
+            android:name="hr.jkacan.setmaker.activities.SetFormActivity"
             android:exported="false"
             android:parentActivityName="hr.jkacan.setmaker.activities.MainActivity" />
 

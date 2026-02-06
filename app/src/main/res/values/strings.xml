@@ -72,4 +72,9 @@
     <string name="search_prompt_message">Enter a song or artist name to find music</string>
     <string name="add_set">Add Set</string>
     <string name="filter_songs">Find in Library</string>
+    <string name="tap_to_change_cover">Tap to change cover</string>
+    <string name="save_set">Save Set</string>
+    <string name="set_name">Set Name</string>
+    <string name="create_set">Create Set</string>
+    <string name="error_set_name_required">Set name is required</string>
 </resources>

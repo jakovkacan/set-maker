@@ -6,33 +6,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.chip.Chip
 import hr.jkacan.setmaker.adapters.SongAdapter
 import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.R
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import hr.jkacan.setmaker.activities.MainActivity
 import hr.jkacan.setmaker.data.dao.SongRepository
+import hr.jkacan.setmaker.databinding.FragmentLibraryBinding
 import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
 import hr.jkacan.setmaker.utils.AudioPreviewManager
 import hr.jkacan.setmaker.utils.getServiceOrNull
 
 class LibraryFragment : Fragment() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var emptyStateLibrary: View
+    private var _binding: FragmentLibraryBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var adapter: SongAdapter
-    private lateinit var fabAdd: FloatingActionButton
-    private lateinit var searchBar: EditText
-    private lateinit var chipSpotify: Chip
-    private lateinit var chipSoundcloud: Chip
-    private lateinit var chipLocal: Chip
     private lateinit var audioPreviewManager: AudioPreviewManager
     private lateinit var soundcloudService: SoundcloudService
 
@@ -45,18 +37,15 @@ class LibraryFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_library, container, false)
+    ): View {
+        _binding = FragmentLibraryBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        recyclerView = view.findViewById(R.id.library_recycler_view)
-        emptyStateLibrary = view.findViewById(R.id.empty_state_library)
-        fabAdd = view.findViewById(R.id.fab_add)
-        searchBar = view.findViewById(R.id.search_bar)
-        chipSpotify = view.findViewById(R.id.chip_spotify)
-        chipSoundcloud = view.findViewById(R.id.chip_soundcloud)
-        chipLocal = view.findViewById(R.id.chip_local)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        recyclerView.layoutManager = LinearLayoutManager(context)
+        binding.libraryRecyclerView.layoutManager = LinearLayoutManager(context)
 
         // Get the SongRepository from MainActivity
         val songRepository = (requireActivity() as MainActivity).songRepository
@@ -66,8 +55,9 @@ class LibraryFragment : Fragment() {
 
         updateEmptyState(songs)
 
-        if (songs.any { it.provider == SongProvider.SOUNDCLOUD }) soundcloudService =
-            SoundcloudService()
+        if (songs.any { it.provider == SongProvider.SOUNDCLOUD }) {
+            soundcloudService = SoundcloudService()
+        }
 
         val scServiceOrNull = getServiceOrNull(::soundcloudService)
 
@@ -80,13 +70,13 @@ class LibraryFragment : Fragment() {
             soundcloudService = scServiceOrNull
         )
 
-        recyclerView.adapter = adapter
+        binding.libraryRecyclerView.adapter = adapter
 
-        chipSpotify.setOnCheckedChangeListener { _, _ -> filterSongs(songRepository) }
-        chipSoundcloud.setOnCheckedChangeListener { _, _ -> filterSongs(songRepository) }
-        chipLocal.setOnCheckedChangeListener { _, _ -> filterSongs(songRepository) }
+        binding.chipSpotify.setOnCheckedChangeListener { _, _ -> filterSongs(songRepository) }
+        binding.chipSoundcloud.setOnCheckedChangeListener { _, _ -> filterSongs(songRepository) }
+        binding.chipLocal.setOnCheckedChangeListener { _, _ -> filterSongs(songRepository) }
 
-        searchBar.setOnEditorActionListener { v, actionId, event ->
+        binding.searchBar.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 filterSongs(songRepository)
                 true
@@ -95,31 +85,29 @@ class LibraryFragment : Fragment() {
             }
         }
 
-        fabAdd.setOnClickListener {
-            (requireActivity() as MainActivity).findViewById<BottomNavigationView>(R.id.bottom_navigation)
-                .selectedItemId = R.id.nav_query
+        binding.fabAdd.setOnClickListener {
+            (requireActivity() as MainActivity).binding.bottomNavigation.selectedItemId =
+                R.id.nav_query
         }
-
-        return view
     }
 
     private fun updateEmptyState(songs: List<Song>) {
         if (songs.isEmpty()) {
-            recyclerView.visibility = View.GONE
-            emptyStateLibrary.visibility = View.VISIBLE
+            binding.libraryRecyclerView.visibility = View.GONE
+            binding.emptyStateLibrary.root.visibility = View.VISIBLE
         } else {
-            recyclerView.visibility = View.VISIBLE
-            emptyStateLibrary.visibility = View.GONE
+            binding.libraryRecyclerView.visibility = View.VISIBLE
+            binding.emptyStateLibrary.root.visibility = View.GONE
         }
     }
 
     private fun filterSongs(songRepository: SongRepository) {
         val selectedProviders = mutableListOf<SongProvider>()
-        val filterQuery = searchBar.text.toString().trim().lowercase()
+        val filterQuery = binding.searchBar.text.toString().trim().lowercase()
 
-        if (chipSpotify.isChecked) selectedProviders.add(SongProvider.SPOTIFY)
-        if (chipSoundcloud.isChecked) selectedProviders.add(SongProvider.SOUNDCLOUD)
-        if (chipLocal.isChecked) selectedProviders.add(SongProvider.LOCAL)
+        if (binding.chipSpotify.isChecked) selectedProviders.add(SongProvider.SPOTIFY)
+        if (binding.chipSoundcloud.isChecked) selectedProviders.add(SongProvider.SOUNDCLOUD)
+        if (binding.chipLocal.isChecked) selectedProviders.add(SongProvider.LOCAL)
 
         // Start with all songs
         var filteredSongs = songRepository.getAll()
@@ -144,7 +132,6 @@ class LibraryFragment : Fragment() {
         updateEmptyState(filteredSongs)
     }
 
-
     private fun showSongOptionsModal(song: Song) {
         val modalFragment = SongOptionsBottomSheet.newInstance(song)
         modalFragment.onSongDeleted = {
@@ -156,5 +143,10 @@ class LibraryFragment : Fragment() {
     private fun refreshSongs() {
         val songRepository = (requireActivity() as MainActivity).songRepository
         filterSongs(songRepository)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

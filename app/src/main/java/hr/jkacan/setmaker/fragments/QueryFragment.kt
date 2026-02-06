@@ -8,7 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.EditText
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -21,15 +21,15 @@ import hr.jkacan.setmaker.R
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import hr.jkacan.setmaker.data.dao.SongRepository
+import hr.jkacan.setmaker.databinding.FragmentQueryBinding
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.utils.showToast
 import hr.jkacan.setmaker.viewmodels.QuerySharedViewModel
 
 class QueryFragment : Fragment() {
 
-    private lateinit var searchBar: EditText
-    private lateinit var tabLayout: TabLayout
-    private lateinit var viewPager: ViewPager2
+    private var _binding: FragmentQueryBinding? = null
+    private val binding get() = _binding!!
 
     private val sharedViewModel: QuerySharedViewModel by viewModels {
         object : ViewModelProvider.Factory {
@@ -44,18 +44,19 @@ class QueryFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_query, container, false)
+    ): View {
+        _binding = FragmentQueryBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        searchBar = view.findViewById(R.id.search_bar)
-        tabLayout = view.findViewById(R.id.tab_layout)
-        viewPager = view.findViewById(R.id.view_pager)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         // Setup ViewPager with tabs
         val pagerAdapter = QueryPagerAdapter(this)
-        viewPager.adapter = pagerAdapter
+        binding.viewPager.adapter = pagerAdapter
 
-        TabLayoutMediator(tabLayout, viewPager) { tab, position ->
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = when (position) {
                 0 -> getString(R.string.spotify)
                 1 -> getString(R.string.soundcloud)
@@ -64,7 +65,7 @@ class QueryFragment : Fragment() {
             }
         }.attach()
 
-        searchBar.setOnEditorActionListener { v, actionId, event ->
+        binding.searchBar.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 performSearch()
                 true
@@ -74,13 +75,13 @@ class QueryFragment : Fragment() {
         }
 
         // set initial colors for the currently selected page
-        updateTabColors(viewPager.currentItem)
+        updateTabColors(binding.viewPager.currentItem)
 
         // when a tab is selected by tap
-        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 updateTabColors(tab.position)
-                viewPager.currentItem = tab.position
+                binding.viewPager.currentItem = tab.position
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {}
@@ -88,19 +89,17 @@ class QueryFragment : Fragment() {
         })
 
         // when the page changes by swipe
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 updateTabColors(position)
             }
         })
-
-        return view
     }
 
     private fun performSearch() {
-        val query = searchBar.text.toString().trim()
+        val query = binding.searchBar.text.toString().trim()
         if (query.isNotEmpty()) {
-            val currentProvider = when (viewPager.currentItem) {
+            val currentProvider = when (binding.viewPager.currentItem) {
                 0 -> SongProvider.SPOTIFY
                 1 -> SongProvider.SOUNDCLOUD
                 2 -> SongProvider.LOCAL
@@ -111,9 +110,8 @@ class QueryFragment : Fragment() {
 
             // Hide keyboard
             val imm =
-                requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-            imm.hideSoftInputFromWindow(searchBar.windowToken, 0)
-
+                requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(binding.searchBar.windowToken, 0)
         }
     }
 
@@ -126,8 +124,8 @@ class QueryFragment : Fragment() {
         }
         val unselectedColor = ContextCompat.getColor(requireContext(), R.color.text_secondary)
 
-        tabLayout.setSelectedTabIndicatorColor(selectedColor)
-        tabLayout.setTabTextColors(unselectedColor, selectedColor)
+        binding.tabLayout.setSelectedTabIndicatorColor(selectedColor)
+        binding.tabLayout.setTabTextColors(unselectedColor, selectedColor)
     }
 
     private val requestPermissionLauncher = registerForActivityResult(
@@ -171,8 +169,14 @@ class QueryFragment : Fragment() {
     }
 
     fun focusSearchBar() {
-        searchBar.requestFocus()
-        val imm = requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-        imm.showSoftInput(searchBar, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+        binding.searchBar.requestFocus()
+        val imm =
+            requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(binding.searchBar, InputMethodManager.SHOW_IMPLICIT)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
