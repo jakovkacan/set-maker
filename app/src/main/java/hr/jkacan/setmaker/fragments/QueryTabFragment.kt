@@ -1,6 +1,5 @@
 package hr.jkacan.setmaker.fragments
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,8 +12,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import hr.jkacan.setmaker.SetMakerApplication
 import hr.jkacan.setmaker.adapters.SongAdapter
+import hr.jkacan.setmaker.data.dao.SongRepository
 import hr.jkacan.setmaker.models.song.SongProvider
-import hr.jkacan.setmaker.activities.MainActivity
 import hr.jkacan.setmaker.data.state.SearchResultState
 import hr.jkacan.setmaker.databinding.FragmentQueryTabBinding
 import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
@@ -50,6 +49,7 @@ class QueryTabFragment : Fragment() {
 
     private lateinit var audioPreviewManager: AudioPreviewManager
     private lateinit var soundcloudService: SoundcloudService
+    private lateinit var songRepository: SongRepository
 
     companion object {
         private const val ARG_PROVIDER = "provider"
@@ -63,21 +63,20 @@ class QueryTabFragment : Fragment() {
         }
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        val application = requireActivity().application as SetMakerApplication
-        audioPreviewManager = application.audioPreviewManager
-        if (provider == SongProvider.SOUNDCLOUD) {
-            soundcloudService = application.soundcloudService
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             provider = it.getSerializable(ARG_PROVIDER) as SongProvider
         }
+
+        val application = requireActivity().application as SetMakerApplication
+        audioPreviewManager = application.audioPreviewManager
+        songRepository = application.songRepository
+        if (provider == SongProvider.SOUNDCLOUD) {
+            soundcloudService = application.soundcloudService
+        }
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -94,7 +93,6 @@ class QueryTabFragment : Fragment() {
         emptyStateInitial = binding.emptyStateInitialStub.inflate()
         binding.queryResultsRecyclerView.layoutManager = LinearLayoutManager(context)
 
-        val songRepository = (requireActivity() as MainActivity).songRepository
         val scServiceOrNull = getServiceOrNull(::soundcloudService)
 
         adapter = SongAdapter(

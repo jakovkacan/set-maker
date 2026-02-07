@@ -11,13 +11,11 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import hr.jkacan.setmaker.SetMakerApplication
 import hr.jkacan.setmaker.activities.EditorActivity
-import hr.jkacan.setmaker.activities.MainActivity
 import hr.jkacan.setmaker.activities.SetFormActivity
 import hr.jkacan.setmaker.adapters.SetAdapter
 import hr.jkacan.setmaker.data.dao.SetRepository
 import hr.jkacan.setmaker.databinding.FragmentSetsBinding
 import hr.jkacan.setmaker.models.set.SetItem
-import hr.jkacan.setmaker.models.song.Song
 
 class SetsFragment : Fragment() {
 
@@ -112,7 +110,9 @@ class SetsFragment : Fragment() {
     }
 
     private fun refreshSets() {
-//        filterSets(setRepository)
+        val updatedSets = setRepository.getAll()
+        adapter.updateSets(updatedSets)
+        updateEmptyState(updatedSets)
     }
 
     override fun onDestroyView() {

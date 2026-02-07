@@ -1,7 +1,9 @@
 package hr.jkacan.setmaker.activities
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -29,9 +31,24 @@ class SetFormActivity : AppCompatActivity() {
     private var isEditMode = false
 
     private val imagePickerLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
+        ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let {
+            if (selectedImageUri != null) {
+                try {
+                    contentResolver.releasePersistableUriPermission(
+                        selectedImageUri!!,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                } catch (e: SecurityException) {
+                    // Permission was already released or never persisted
+                    Log.w("Playlist", "Could not release old URI permission", e)
+                }
+            }
+            contentResolver.takePersistableUriPermission(
+                it,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
             selectedImageUri = it
             binding.setCoverPreview.load(it) {
                 crossfade(true)
@@ -62,12 +79,16 @@ class SetFormActivity : AppCompatActivity() {
             existingSet?.let { set ->
                 isEditMode = true
                 binding.setNameInput.setText(set.name)
-                set.coverPath?.let { path ->
-                    selectedImageUri = path.toUri()
-                    binding.setCoverPreview.load(selectedImageUri) {
-                        crossfade(true)
+                if (!set.coverPath.isNullOrBlank()) {
+                    set.coverPath.let { path ->
+                        selectedImageUri = path.toUri()
+                        binding.setCoverPreview.load(selectedImageUri) {
+                            crossfade(true)
+                        }
+                        binding.cameraIcon.alpha = 0f
                     }
-                    binding.cameraIcon.alpha = 0f
+                } else {
+                    binding.cameraIcon.alpha = 1f
                 }
             }
         }
@@ -89,7 +110,7 @@ class SetFormActivity : AppCompatActivity() {
 
     private fun setupClickListeners() {
         binding.coverImageCard.setOnClickListener {
-            imagePickerLauncher.launch("image/*")
+            imagePickerLauncher.launch(arrayOf("image/*"))
         }
 
         binding.saveButton.setOnClickListener {
@@ -105,17 +126,19 @@ class SetFormActivity : AppCompatActivity() {
             return
         }
 
+        val coverPath = if (selectedImageUri != null) selectedImageUri.toString() else null
+
         val set = if (isEditMode && existingSet != null) {
             existingSet!!.copy(
                 name = setName,
-                coverPath = selectedImageUri.toString(),
+                coverPath = coverPath,
                 dateUpdated = Date()
             )
         } else {
             SetItem(
                 id = null,
                 name = setName,
-                coverPath = selectedImageUri.toString(),
+                coverPath = coverPath,
                 dateAdded = Date(),
                 dateUpdated = Date()
             )

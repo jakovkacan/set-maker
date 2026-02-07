@@ -1,6 +1,5 @@
 package hr.jkacan.setmaker.fragments
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,8 +29,8 @@ class LibraryFragment : Fragment() {
     private lateinit var songRepository: SongRepository
     private lateinit var soundcloudService: SoundcloudService
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         val application = requireActivity().application as SetMakerApplication
         audioPreviewManager = application.audioPreviewManager
         songRepository = application.songRepository
