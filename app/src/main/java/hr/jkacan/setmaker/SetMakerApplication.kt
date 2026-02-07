@@ -3,6 +3,7 @@ package hr.jkacan.setmaker
 import android.app.Application
 import hr.jkacan.setmaker.data.dao.SetRepository
 import hr.jkacan.setmaker.data.dao.SongRepository
+import hr.jkacan.setmaker.data.dao.getSetGraphRepository
 import hr.jkacan.setmaker.data.dao.getSetRepository
 import hr.jkacan.setmaker.data.dao.getSongRepository
 import hr.jkacan.setmaker.services.local.LocalMusicService
@@ -14,6 +15,7 @@ class SetMakerApplication : Application() {
     // Repositories
     val songRepository by lazy { getSongRepository(this) }
     val setRepository by lazy { getSetRepository(this) }
+    val setGraphRepository by lazy { getSetGraphRepository(this) }
 
     // Services
     val spotifyService by lazy { SpotifyService() }

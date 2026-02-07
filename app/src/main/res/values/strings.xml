@@ -80,4 +80,6 @@
     <string name="set_form_title_edit">Edit Set</string>
     <string name="edit_set">Edit Set</string>
     <string name="set_options">Set Options</string>
+    <string name="select_song">Select a Song</string>
+    <string name="toggle_debug_mode">Toggle Debug Mode</string>
 </resources>

@@ -7,7 +7,8 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:paddingBottom="130dp">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/sets_recycler_view"
@@ -25,7 +26,6 @@
             layout="@layout/state_empty_sets"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="130dp"
             android:visibility="gone" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -33,7 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_marginBottom="150dp"
+            android:layout_marginBottom="20dp"
             android:layout_marginEnd="16dp"
             android:visibility="visible"
             android:contentDescription="@string/add_set"
