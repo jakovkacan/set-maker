@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import hr.jkacan.setmaker.R
+import hr.jkacan.setmaker.editor.layout.NODE_WIDTH
 import hr.jkacan.setmaker.models.song.Song
 
 @Composable
@@ -38,7 +39,7 @@ fun SongNode(
 ) {
     Card(
         modifier = modifier
-            .width(120.dp)
+            .width(NODE_WIDTH)
             .wrapContentHeight()
             .graphicsLayer(
                 alpha = if (isDragging) 0.5f else 1f,

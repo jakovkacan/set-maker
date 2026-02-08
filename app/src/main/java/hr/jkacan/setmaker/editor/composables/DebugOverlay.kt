@@ -22,6 +22,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import hr.jkacan.setmaker.data.state.EditorState
+import hr.jkacan.setmaker.editor.layout.HORIZONTAL_SPACING
+import hr.jkacan.setmaker.editor.layout.NODE_WIDTH
+import hr.jkacan.setmaker.editor.layout.VERTICAL_SPACING
+import hr.jkacan.setmaker.editor.layout.withDensity
 import hr.jkacan.setmaker.models.editor.UiNode
 
 @Composable
@@ -140,8 +144,8 @@ fun DebugOverlay(
                     // Calculate the node's base canvas position (without drag offset)
                     val density = LocalDensity.current
                     val configuration = LocalConfiguration.current
-                    val horizontalSpacing = with(density) { 180.dp.toPx() }
-                    val verticalSpacing = with(density) { 220.dp.toPx() }
+                    val horizontalSpacing = HORIZONTAL_SPACING.withDensity(density)
+                    val verticalSpacing = VERTICAL_SPACING.withDensity(density)
                     val canvasWidth =
                         with(density) { configuration.screenWidthDp.dp.toPx() }
                     val nodeWidth = 120f

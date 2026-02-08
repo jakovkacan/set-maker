@@ -8,6 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
+import hr.jkacan.setmaker.editor.composables.EditorCanvasState
+import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.canvasToScreenCoordinates
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -28,19 +30,26 @@ class UnifiedGestureDetector(
      *
      * @param id Identifier for the element being dragged
      * @param onDragStart Called when long press is completed and drag begins
-     * @param onDrag Called during drag with the offset delta from initial touch point
+     * @param onDrag Called during drag with the offset delta from initial touch point, canvas position, hovered node, and hovered edge
      * @param onDragEnd Called when drag ends
      */
     @OptIn(DelicateCoroutinesApi::class)
     suspend fun PointerInputScope.detectLongPressDrag(
         id: Int,
+        nodePosition: Offset,
+        canvasState: EditorCanvasState,
         onDragStart: (Int) -> Unit,
-        onDrag: (Offset) -> Unit,
+        onDrag: (Offset, Offset) -> Unit,
         onDragEnd: () -> Unit,
         onDebugDragUpdate: (screenPos: Offset, canvasPos: Offset) -> Unit = { _, _ -> },
     ) {
+        var cumulativeDrag: Offset
+        var canvasCoordinates: Offset
+
         awaitEachGesture {
             val down = awaitFirstDown(requireUnconsumed = false)
+            cumulativeDrag = Offset.Zero
+            canvasCoordinates = nodePosition + down.position
             var longPressTriggered = false
 
             val longPressJob: Job = GlobalScope.launch {
@@ -57,10 +66,20 @@ class UnifiedGestureDetector(
                 if (longPressTriggered) {
                     event.changes.forEach { change ->
                         if (change.pressed) {
-                            val dragAmount = change.position - down.position
-                            onDrag(dragAmount)
+                            val delta = change.position - change.previousPosition
 
-                            onDebugDragUpdate(change.position, dragAmount)
+                            val dragAmount = change.position - down.position
+                            cumulativeDrag += delta
+                            canvasCoordinates += delta
+
+                            onDrag(dragAmount, canvasCoordinates)
+
+                            onDebugDragUpdate(
+                                canvasToScreenCoordinates(
+                                    canvasCoordinates,
+                                    canvasState
+                                ), canvasCoordinates
+                            )
 
                             change.consume()
                         }

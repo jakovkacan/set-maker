@@ -156,8 +156,8 @@ object GraphLayoutCalculator {
     @Composable
     fun calculateNodePositionDp(node: UiNode): Offset {
         val density = LocalDensity.current
-        val horizontalSpacing = with(density) { 180.dp.toPx() }
-        val verticalSpacing = with(density) { 220.dp.toPx() }
+        val horizontalSpacing = HORIZONTAL_SPACING.withDensity(density)
+        val verticalSpacing = VERTICAL_SPACING.withDensity(density)
         val configuration = LocalConfiguration.current
         val canvasWidth = with(density) { configuration.screenWidthDp.dp.toPx() }
 
@@ -176,6 +176,15 @@ object GraphLayoutCalculator {
         val canvasX = (screenOffset.x - canvasState.offset.x) / canvasState.scale
         val canvasY = (screenOffset.y - canvasState.offset.y) / canvasState.scale
         return Offset(canvasX, canvasY)
+    }
+
+    fun canvasToScreenCoordinates(
+        canvasOffset: Offset,
+        canvasState: EditorCanvasState
+    ): Offset {
+        val screenX = canvasOffset.x * canvasState.scale + canvasState.offset.x
+        val screenY = canvasOffset.y * canvasState.scale + canvasState.offset.y
+        return Offset(screenX, screenY)
     }
 
 }

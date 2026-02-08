@@ -18,6 +18,10 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.calculateNodePosition
+import hr.jkacan.setmaker.editor.layout.HORIZONTAL_SPACING
+import hr.jkacan.setmaker.editor.layout.NODE_HEIGHT
+import hr.jkacan.setmaker.editor.layout.NODE_WIDTH
+import hr.jkacan.setmaker.editor.layout.VERTICAL_SPACING
 import hr.jkacan.setmaker.models.editor.UiEdge
 import hr.jkacan.setmaker.models.editor.UiNode
 import kotlin.collections.forEach
@@ -33,10 +37,10 @@ fun EdgeLayer(
     val density = LocalDensity.current
 
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val nodeWidth = 120.dp.toPx()
-        val nodeHeight = 150.dp.toPx()
-        val horizontalSpacing = 180.dp.toPx()
-        val verticalSpacing = 220.dp.toPx()
+        val nodeWidth = NODE_WIDTH.toPx()
+        val nodeHeight = NODE_HEIGHT.toPx()
+        val horizontalSpacing = HORIZONTAL_SPACING.toPx()
+        val verticalSpacing = VERTICAL_SPACING.toPx()
 
         // Draw regular edges
         edges.forEach { edge ->
@@ -134,8 +138,10 @@ fun EdgeLayer(
             val toNode = nodes[edge.toId]
 
             if (fromNode != null && toNode != null) {
-                val horizontalSpacing = with(density) { 180.dp.toPx() }
-                val verticalSpacing = with(density) { 220.dp.toPx() }
+                val nodeWidth = with(density) { NODE_WIDTH.toPx() }
+                val nodeHeight = with(density) { NODE_HEIGHT.toPx() }
+                val horizontalSpacing = with(density) { HORIZONTAL_SPACING.toPx() }
+                val verticalSpacing = with(density) { VERTICAL_SPACING.toPx() }
                 val configuration = LocalConfiguration.current
                 val canvasWidth = with(density) { configuration.screenWidthDp.dp.toPx() }
 
@@ -151,9 +157,6 @@ fun EdgeLayer(
                     horizontalSpacing,
                     verticalSpacing,
                 )
-
-                val nodeWidth = with(density) { 120.dp.toPx() }
-                val nodeHeight = with(density) { 150.dp.toPx() }
 
                 val startY = fromPos.y + nodeHeight
                 val endY = toPos.y
