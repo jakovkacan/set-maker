@@ -5,7 +5,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import hr.jkacan.setmaker.data.state.EditorState
+import hr.jkacan.setmaker.editor.EditorState
 import hr.jkacan.setmaker.editor.composables.EditorCanvasState
 import hr.jkacan.setmaker.models.editor.UiEdge
 import hr.jkacan.setmaker.models.editor.UiNode
@@ -182,8 +182,10 @@ object GraphLayoutCalculator {
         canvasOffset: Offset,
         canvasState: EditorCanvasState
     ): Offset {
-        val screenX = canvasOffset.x * canvasState.scale + canvasState.offset.x
-        val screenY = canvasOffset.y * canvasState.scale + canvasState.offset.y
+        val screenX =
+            (canvasOffset.x - canvasState.centerX) * canvasState.scale + canvasState.centerX + canvasState.offset.x
+        val screenY =
+            (canvasOffset.y - canvasState.centerY) * canvasState.scale + canvasState.centerY + canvasState.offset.y
         return Offset(screenX, screenY)
     }
 

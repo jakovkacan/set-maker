@@ -15,7 +15,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import hr.jkacan.setmaker.editor.gestures.UnifiedGestureDetector
+import hr.jkacan.setmaker.editor.gestures.GestureDetector
 import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.calculateNodePositionDp
 import hr.jkacan.setmaker.editor.layout.HORIZONTAL_SPACING
 import hr.jkacan.setmaker.editor.layout.HitDetector
@@ -45,7 +45,7 @@ fun NodeLayer(
     val vibrator = context.getSystemService(Vibrator::class.java)
 
     val gestureDetector = remember(vibrator) {
-        UnifiedGestureDetector(vibrator)
+        GestureDetector(vibrator)
     }
 
     val configuration = LocalConfiguration.current
@@ -89,7 +89,7 @@ fun NodeLayer(
                     song = node.song,
                     modifier = Modifier
                         .offset { finalOffset }
-                        .pointerInput(node.id) {
+                        .pointerInput(node.id, node.col, node.row) {
                             with(gestureDetector) {
                                 detectLongPressDrag(
                                     id = node.id,
@@ -121,7 +121,12 @@ fun NodeLayer(
 
                 // Debug overlay for nodes
                 if (debugMode) {
-                    NodeDebugOverlay(node, position, canvasState.scale, finalOffset)
+                    NodeDebugOverlay(
+                        node,
+                        position,
+                        canvasState,
+                        finalOffset
+                    )
                 }
             }
         }

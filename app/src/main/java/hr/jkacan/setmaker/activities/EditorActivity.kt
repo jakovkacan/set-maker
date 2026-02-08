@@ -99,7 +99,8 @@ class EditorActivity : AppCompatActivity() {
                 onAddNode = { from, to -> showSongPicker(from, to) },
                 onAddNodeBranch = { from -> showSongPickerForBranch(from) },
                 onSwapNodes = viewModel::swapNodes,
-                onInsertNode = viewModel::insertNodeBetween
+                onInsertNode = viewModel::insertNodeBetween,
+                onDeleteNode = viewModel::deleteNode
             )
 
             // Update FAB visibility based on graph state

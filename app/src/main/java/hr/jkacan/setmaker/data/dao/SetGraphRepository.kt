@@ -214,6 +214,221 @@ class SetGraphRepository(private val context: Context) {
         )
     }
 
+    /**
+     * Swaps two nodes by swapping all their edges in a single transaction.
+     * This avoids cascade deletion issues by collecting all edge data first,
+     * then deleting and recreating edges atomically.
+     */
+    fun swapNodesTransaction(setId: Int, node1Id: Int, node2Id: Int) {
+        val db = dbHelper.writableDatabase
+        db.beginTransaction()
+        try {
+            // Get all edges for the set
+            val edges = getEdgesBySet(setId)
+
+            // Find edges connected to node1 (excluding edges between node1 and node2)
+            val node1IncomingEdges = edges.filter { it.toNodeId == node1Id && it.fromNodeId != node2Id }
+            val node1OutgoingEdges = edges.filter { it.fromNodeId == node1Id && it.toNodeId != node2Id }
+
+            // Find edges connected to node2 (excluding edges between node2 and node1)
+            val node2IncomingEdges = edges.filter { it.toNodeId == node2Id && it.fromNodeId != node1Id }
+            val node2OutgoingEdges = edges.filter { it.fromNodeId == node2Id && it.toNodeId != node1Id }
+
+            // Find edge between node1 and node2 (if any)
+            val edge1to2 = edges.firstOrNull { it.fromNodeId == node1Id && it.toNodeId == node2Id }
+            val edge2to1 = edges.firstOrNull { it.fromNodeId == node2Id && it.toNodeId == node1Id }
+
+            // Delete all edges connected to both nodes
+            val edgesToDelete = (node1IncomingEdges + node1OutgoingEdges + node2IncomingEdges + node2OutgoingEdges)
+                .map { it.id }
+                .distinct()
+                .toMutableList()
+
+            edge1to2?.let { edgesToDelete.add(it.id) }
+            edge2to1?.let { edgesToDelete.add(it.id) }
+
+            for (edgeId in edgesToDelete) {
+                deleteEdge(edgeId)
+            }
+
+            // Recreate edges with swapped node IDs
+            node1IncomingEdges.forEach { edge ->
+                insertEdge(
+                    setId = setId,
+                    fromNodeId = edge.fromNodeId,
+                    toNodeId = node2Id,
+                    ord = edge.ord,
+                    kind = edge.kind
+                )
+            }
+
+            node1OutgoingEdges.forEach { edge ->
+                insertEdge(
+                    setId = setId,
+                    fromNodeId = node2Id,
+                    toNodeId = edge.toNodeId,
+                    ord = edge.ord,
+                    kind = edge.kind
+                )
+            }
+
+            node2IncomingEdges.forEach { edge ->
+                insertEdge(
+                    setId = setId,
+                    fromNodeId = edge.fromNodeId,
+                    toNodeId = node1Id,
+                    ord = edge.ord,
+                    kind = edge.kind
+                )
+            }
+
+            node2OutgoingEdges.forEach { edge ->
+                insertEdge(
+                    setId = setId,
+                    fromNodeId = node1Id,
+                    toNodeId = edge.toNodeId,
+                    ord = edge.ord,
+                    kind = edge.kind
+                )
+            }
+
+            // Recreate edge between nodes (swapped)
+            edge1to2?.let { edge ->
+                insertEdge(
+                    setId = setId,
+                    fromNodeId = node2Id,
+                    toNodeId = node1Id,
+                    ord = edge.ord,
+                    kind = edge.kind
+                )
+            }
+
+            edge2to1?.let { edge ->
+                insertEdge(
+                    setId = setId,
+                    fromNodeId = node1Id,
+                    toNodeId = node2Id,
+                    ord = edge.ord,
+                    kind = edge.kind
+                )
+            }
+
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
+    /**
+     * Inserts a node between two nodes in a single transaction.
+     * This avoids cascade deletion issues.
+     */
+    fun insertNodeBetweenTransaction(setId: Int, draggedId: Int, fromId: Int, toId: Int) {
+        val db = dbHelper.writableDatabase
+        db.beginTransaction()
+        try {
+            // Get all edges for the set
+            val edges = getEdgesBySet(setId)
+
+            // Find edges connected to the dragged node
+            val draggedIncomingEdges = edges.filter { it.toNodeId == draggedId }
+            val draggedOutgoingEdges = edges.filter { it.fromNodeId == draggedId }
+
+            // Store edge data before deletion
+            val draggedIncomingData = draggedIncomingEdges.map { Triple(it.fromNodeId, it.ord, it.kind) }
+            val draggedOutgoingData = draggedOutgoingEdges.map { Triple(it.toNodeId, it.ord, it.kind) }
+
+            // Remove the dragged node from its current position
+            draggedIncomingEdges.forEach { deleteEdge(it.id) }
+            draggedOutgoingEdges.forEach { deleteEdge(it.id) }
+
+            // Delete the edge between fromNode and toNode
+            deleteEdgeBetweenNodes(setId, fromId, toId)
+
+            // Reconnect orphaned nodes from dragged node's previous position
+            // If dragged node had incoming edges, connect them to its outgoing targets
+            if (draggedIncomingData.isNotEmpty() && draggedOutgoingData.isNotEmpty()) {
+                for (incoming in draggedIncomingData) {
+                    for (outgoing in draggedOutgoingData) {
+                        insertEdge(
+                            setId = setId,
+                            fromNodeId = incoming.first,
+                            toNodeId = outgoing.first,
+                            ord = outgoing.second,
+                            kind = outgoing.third
+                        )
+                    }
+                }
+            }
+
+            // Insert the dragged node between fromNode and toNode
+            insertEdge(
+                setId = setId,
+                fromNodeId = fromId,
+                toNodeId = draggedId
+            )
+
+            insertEdge(
+                setId = setId,
+                fromNodeId = draggedId,
+                toNodeId = toId
+            )
+
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
+    /**
+     * Deletes a node and reconnects its parent to all its children in a single transaction.
+     * This preserves the graph structure by maintaining connectivity.
+     * For branching situations, all children are linked to the parent node.
+     */
+    fun deleteNodeTransaction(setId: Int, nodeId: Int) {
+        val db = dbHelper.writableDatabase
+        db.beginTransaction()
+        try {
+            // Get all edges for the set
+            val edges = getEdgesBySet(setId)
+
+            // Find edges connected to the node being deleted
+            val incomingEdges = edges.filter { it.toNodeId == nodeId }
+            val outgoingEdges = edges.filter { it.fromNodeId == nodeId }
+
+            // Store parent nodes data (nodes pointing to this node)
+            val parentNodes = incomingEdges.map { Triple(it.fromNodeId, it.ord, it.kind) }
+
+            // Store children nodes data (nodes this node points to)
+            val childrenNodes = outgoingEdges.map { Triple(it.toNodeId, it.ord, it.kind) }
+
+            // Delete all edges connected to the node
+            incomingEdges.forEach { deleteEdge(it.id) }
+            outgoingEdges.forEach { deleteEdge(it.id) }
+
+            // Reconnect parent nodes to children nodes
+            // For each parent, create edges to all children
+            for (parent in parentNodes) {
+                for (child in childrenNodes) {
+                    insertEdge(
+                        setId = setId,
+                        fromNodeId = parent.first,
+                        toNodeId = child.first,
+                        ord = child.second, // Preserve the child's edge order
+                        kind = child.third   // Preserve the child's edge kind
+                    )
+                }
+            }
+
+            // Delete the node itself
+            deleteNode(nodeId)
+
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
     fun getEdgesBySet(setId: Int): List<SetEdge> {
         val edges = mutableListOf<SetEdge>()
         val db = dbHelper.readableDatabase

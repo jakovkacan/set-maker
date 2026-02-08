@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hr.jkacan.setmaker.data.dao.SetGraphRepository
 import hr.jkacan.setmaker.data.dao.SongRepository
-import hr.jkacan.setmaker.data.state.EditorState
+import hr.jkacan.setmaker.editor.EditorState
 import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.computeGraphLayout
 import hr.jkacan.setmaker.models.song.Song
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -173,95 +173,54 @@ class EditorViewModel(
     }
 
     fun swapNodes(node1Id: Int, node2Id: Int) {
-        // Get all edges for the set
-        val edges = setGraphRepository.getEdgesBySet(setId)
-
-        // Find edges connected to node1
-        val node1IncomingEdges = edges.filter { it.toNodeId == node1Id }
-        val node1OutgoingEdges = edges.filter { it.fromNodeId == node1Id }
-
-        // Find edges connected to node2
-        val node2IncomingEdges = edges.filter { it.toNodeId == node2Id }
-        val node2OutgoingEdges = edges.filter { it.fromNodeId == node2Id }
-
-        // Delete all edges connected to both nodes
-        node1IncomingEdges.forEach { setGraphRepository.deleteEdge(it.id) }
-        node1OutgoingEdges.forEach { setGraphRepository.deleteEdge(it.id) }
-        node2IncomingEdges.forEach { setGraphRepository.deleteEdge(it.id) }
-        node2OutgoingEdges.forEach { setGraphRepository.deleteEdge(it.id) }
-
-        // Recreate edges with swapped node IDs
-        node1IncomingEdges.forEach { edge ->
-            setGraphRepository.insertEdge(
-                setId = setId,
-                fromNodeId = edge.fromNodeId,
-                toNodeId = node2Id,
-                ord = edge.ord,
-                kind = edge.kind
-            )
-        }
-
-        node1OutgoingEdges.forEach { edge ->
-            setGraphRepository.insertEdge(
-                setId = setId,
-                fromNodeId = node2Id,
-                toNodeId = edge.toNodeId,
-                ord = edge.ord,
-                kind = edge.kind
-            )
-        }
-
-        node2IncomingEdges.forEach { edge ->
-            setGraphRepository.insertEdge(
-                setId = setId,
-                fromNodeId = edge.fromNodeId,
-                toNodeId = node1Id,
-                ord = edge.ord,
-                kind = edge.kind
-            )
-        }
-
-        node2OutgoingEdges.forEach { edge ->
-            setGraphRepository.insertEdge(
-                setId = setId,
-                fromNodeId = node1Id,
-                toNodeId = edge.toNodeId,
-                ord = edge.ord,
-                kind = edge.kind
-            )
-        }
+        // Use transaction-based swap to avoid cascade deletion issues
+        setGraphRepository.swapNodesTransaction(setId, node1Id, node2Id)
 
         // Refresh the graph
         loadGraph()
     }
 
     fun insertNodeBetween(draggedId: Int, fromId: Int, toId: Int) {
-        // Get all edges for the dragged node
-        val edges = setGraphRepository.getEdgesBySet(setId)
-        val draggedIncomingEdges = edges.filter { it.toNodeId == draggedId }
-        val draggedOutgoingEdges = edges.filter { it.fromNodeId == draggedId }
-
-        // Remove the dragged node from its current position
-        draggedIncomingEdges.forEach { setGraphRepository.deleteEdge(it.id) }
-        draggedOutgoingEdges.forEach { setGraphRepository.deleteEdge(it.id) }
-
-        // Delete the edge between fromNode and toNode
-        setGraphRepository.deleteEdgeBetweenNodes(setId, fromId, toId)
-
-        // Insert the dragged node between fromNode and toNode
-        setGraphRepository.insertEdge(
-            setId = setId,
-            fromNodeId = fromId,
-            toNodeId = draggedId
-        )
-
-        setGraphRepository.insertEdge(
-            setId = setId,
-            fromNodeId = draggedId,
-            toNodeId = toId
-        )
+        // Use transaction-based insert to avoid cascade deletion issues
+        setGraphRepository.insertNodeBetweenTransaction(setId, draggedId, fromId, toId)
 
         // Refresh the graph
         loadGraph()
+    }
+
+    /**
+     * Deletes a node from the graph and reconnects surrounding edges.
+     * The first node (start node) cannot be deleted.
+     * Children nodes are linked to the deleted node's parent.
+     */
+    fun deleteNode(nodeId: Int) {
+        viewModelScope.launch {
+            try {
+                // Check if this is the first node (start node)
+                val startNodes = setGraphRepository.getStartNodes(setId)
+                val isFirstNode = startNodes.any { it.node.id == nodeId }
+
+                if (isFirstNode) {
+                    // Cannot delete the first node
+                    return@launch
+                }
+
+                // Delete the node and reconnect edges
+                setGraphRepository.deleteNodeTransaction(setId, nodeId)
+
+                // Refresh the graph
+                loadGraph()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    /**
+     * Checks if a node can be deleted (i.e., it's not the first node).
+     */
+    fun canDeleteNode(nodeId: Int): Boolean {
+        val startNodes = setGraphRepository.getStartNodes(setId)
+        return !startNodes.any { it.node.id == nodeId }
     }
 }

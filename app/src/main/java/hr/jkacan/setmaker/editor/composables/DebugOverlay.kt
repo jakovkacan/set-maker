@@ -21,7 +21,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import hr.jkacan.setmaker.data.state.EditorState
+import hr.jkacan.setmaker.editor.EditorState
+import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.canvasToScreenCoordinates
 import hr.jkacan.setmaker.editor.layout.HORIZONTAL_SPACING
 import hr.jkacan.setmaker.editor.layout.NODE_WIDTH
 import hr.jkacan.setmaker.editor.layout.VERTICAL_SPACING
@@ -231,12 +232,16 @@ fun DebugOverlay(
 fun NodeDebugOverlay(
     node: UiNode,
     position: Offset,
-    scale: Float,
-    offset: IntOffset
+    canvasState: EditorCanvasState,
+    visualOffset: IntOffset
 ) {
+    // Calculate screen coordinates using center-based transformation
+    // This matches the graphicsLayer transformation: (canvas - center) * scale + center + offset
+    val screenCoords = canvasToScreenCoordinates(position, canvasState)
+
     Box(
         modifier = Modifier
-            .offset { offset }
+            .offset { visualOffset }
             .padding(4.dp)
     ) {
         Box(
@@ -278,12 +283,12 @@ fun NodeDebugOverlay(
                     text = "Screen: (${
                         String.format(
                             "%.0f",
-                            position.x * scale + offset.x
+                            screenCoords.x
                         )
                     }, ${
                         String.format(
                             "%.0f",
-                            position.y * scale + offset.y
+                            screenCoords.y
                         )
                     })",
                     color = Color(0xFF00FF00),

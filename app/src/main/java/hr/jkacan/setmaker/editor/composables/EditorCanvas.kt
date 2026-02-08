@@ -13,7 +13,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import hr.jkacan.setmaker.R
-import hr.jkacan.setmaker.data.state.EditorState
+import hr.jkacan.setmaker.editor.EditorState
 import hr.jkacan.setmaker.editor.gestures.canvasTransformGestures
 import hr.jkacan.setmaker.editor.gestures.debugTapDetection
 
@@ -25,6 +25,7 @@ fun EditorCanvas(
     onAddNodeBranch: (Int) -> Unit,
     onSwapNodes: (Int, Int) -> Unit,
     onInsertNode: (Int, Int, Int) -> Unit,
+    onDeleteNode: (Int) -> Unit,
 ) {
     when {
         state == null -> LoadingState()
@@ -39,8 +40,8 @@ fun EditorCanvas(
             val screenHeight = configuration.screenHeightDp.dp
             val density = LocalDensity.current
 
-            val centerX = with(density) { screenWidth.toPx() / 2f }
-            val centerY = with(density) { screenHeight.toPx() / 2f }
+            canvasState.centerX = with(density) { screenWidth.toPx() / 2f }
+            canvasState.centerY = with(density) { screenHeight.toPx() / 2f }
 
             // Outer container for both transformed canvas and untransformed HUD
             Box(modifier = Modifier.fillMaxSize()) {
@@ -59,8 +60,8 @@ fun EditorCanvas(
                             }
                         )
                         .canvasTransformGestures(
-                            centerX = centerX,
-                            centerY = centerY,
+                            centerX = canvasState.centerX,
+                            centerY = canvasState.centerY,
                             minScale = 0.5f,
                             maxScale = 3f,
                             getCurrentScale = { canvasState.scale },
@@ -132,18 +133,36 @@ fun EditorCanvas(
                             onDragStart = { nodeId ->
                                 canvasState.draggingNodeId = nodeId
                                 canvasState.dragOffset = Offset.Zero
+                                canvasState.isOverDeleteZone = false
                             },
                             onDrag = { delta, hoveredNode, hoveredEdge ->
                                 canvasState.dragOffset += delta
                                 canvasState.highlightedNodeId = hoveredNode
                                 canvasState.highlightedEdge = hoveredEdge
+
+                                // Check if drag position is over delete zone
+                                val dragScreenPos = canvasState.currentDragScreenPos
+                                if (dragScreenPos != null) {
+                                    val screenWidthPx = with(density) { screenWidth.toPx() }
+                                    val screenHeightPx = with(density) { screenHeight.toPx() }
+                                    canvasState.isOverDeleteZone = isInDeleteZone(
+                                        dragScreenPos,
+                                        screenWidthPx,
+                                        screenHeightPx,
+                                        density.density
+                                    )
+                                }
                             },
                             onDragEnd = {
                                 val draggedId = canvasState.draggingNodeId
 
                                 if (draggedId != null) {
+                                    // Check if dropped on delete zone first
+                                    if (canvasState.isOverDeleteZone) {
+                                        onDeleteNode(draggedId)
+                                    }
                                     // Handle drop on node (swap positions)
-                                    if (canvasState.highlightedNodeId != null) {
+                                    else if (canvasState.highlightedNodeId != null) {
                                         onSwapNodes(
                                             draggedId,
                                             canvasState.highlightedNodeId!!
@@ -160,10 +179,7 @@ fun EditorCanvas(
                                     }
                                 }
 
-                                canvasState.draggingNodeId = null
-                                canvasState.dragOffset = Offset.Zero
-                                canvasState.highlightedNodeId = null
-                                canvasState.highlightedEdge = null
+                                canvasState.resetDragState()
                             }
                         )
                     }
@@ -184,6 +200,12 @@ fun EditorCanvas(
                         highlightedEdge = canvasState.highlightedEdge
                     )
                 }
+
+                // Delete zone - shows when dragging a node
+                DeleteZone(
+                    isVisible = canvasState.draggingNodeId != null,
+                    isHighlighted = canvasState.isOverDeleteZone
+                )
             }
         }
     }

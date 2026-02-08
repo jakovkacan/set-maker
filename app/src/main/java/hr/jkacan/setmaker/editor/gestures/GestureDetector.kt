@@ -17,9 +17,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Unified gesture detector that supports click, long press, and drag operations.
+ * Gesture detector that supports click, long press, and drag operations.
  */
-class UnifiedGestureDetector(
+class GestureDetector(
     private val vibrator: Vibrator?,
     private val longPressDuration: Long = 500L,
     private val vibrationDuration: Long = 50L
@@ -75,10 +75,8 @@ class UnifiedGestureDetector(
                             onDrag(dragAmount, canvasCoordinates)
 
                             onDebugDragUpdate(
-                                canvasToScreenCoordinates(
-                                    canvasCoordinates,
-                                    canvasState
-                                ), canvasCoordinates
+                                canvasToScreenCoordinates(canvasCoordinates, canvasState),
+                                canvasCoordinates
                             )
 
                             change.consume()
@@ -147,7 +145,7 @@ class UnifiedGestureDetector(
  * Modifier extension for click and long press gestures.
  */
 fun Modifier.clickAndLongPress(
-    detector: UnifiedGestureDetector,
+    detector: GestureDetector,
     onClick: () -> Unit,
     onLongPress: () -> Unit
 ): Modifier = this.pointerInput(Unit) {

@@ -18,11 +18,17 @@ class EditorCanvasState {
     var scale by mutableFloatStateOf(1f)
     var offset by mutableStateOf(Offset.Zero)
 
+    var centerX by mutableFloatStateOf(0f)
+    var centerY by mutableFloatStateOf(0f)
+
     // Drag state
     var draggingNodeId by mutableStateOf<Int?>(null)
     var dragOffset by mutableStateOf(Offset.Zero)
     var highlightedNodeId by mutableStateOf<Int?>(null)
     var highlightedEdge by mutableStateOf<Pair<Int, Int>?>(null)
+
+    // Delete zone state
+    var isOverDeleteZone by mutableStateOf(false)
 
     // Debug state
     var lastTapScreenPos by mutableStateOf<Offset?>(null)
@@ -35,5 +41,6 @@ class EditorCanvasState {
         dragOffset = Offset.Zero
         highlightedNodeId = null
         highlightedEdge = null
+        isOverDeleteZone = false
     }
 }

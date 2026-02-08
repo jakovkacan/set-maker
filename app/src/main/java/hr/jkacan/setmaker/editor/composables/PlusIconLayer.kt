@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -23,7 +22,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.editor.gestures.clickAndLongPress
-import hr.jkacan.setmaker.editor.gestures.UnifiedGestureDetector
+import hr.jkacan.setmaker.editor.gestures.GestureDetector
 import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.calculateNodePosition
 import hr.jkacan.setmaker.models.editor.UiEdge
 import hr.jkacan.setmaker.models.editor.UiNode
@@ -124,7 +123,7 @@ private fun PlusIcon(
     val context = LocalContext.current
     val vibrator = context.getSystemService(Vibrator::class.java)
     val gestureDetector = androidx.compose.runtime.remember(vibrator) {
-        UnifiedGestureDetector(vibrator)
+        GestureDetector(vibrator)
     }
     val iconSizeDp = 32f
     val iconSizePx = with(density) { iconSizeDp.dp.toPx() }
