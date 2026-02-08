@@ -5,11 +5,11 @@ import hr.jkacan.setmaker.models.editor.UiEdge
 import hr.jkacan.setmaker.models.editor.UiNode
 
 data class EditorState(
-    val nodes: Map<Long, UiNode>,
+    val nodes: Map<Int, UiNode>,
     val edges: List<UiEdge>,
-    val draggingNodeId: Long? = null,
-    val linkingFromId: Long? = null,
-    val pointerWorld: Offset = Offset.Companion.Unspecified,
-    val pan: Offset = Offset.Companion.Zero,
+    val draggingNodeId: Int? = null,
+    val linkingFromId: Int? = null,
+    val pointerWorld: Offset = Offset.Unspecified,
+    val pan: Offset = Offset.Zero,
     val zoom: Float = 1f
 )
