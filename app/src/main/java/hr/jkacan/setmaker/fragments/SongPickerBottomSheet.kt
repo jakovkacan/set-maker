@@ -16,12 +16,16 @@ import hr.jkacan.setmaker.adapters.SongAdapter
 import hr.jkacan.setmaker.data.dao.SongRepository
 import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
+import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
+import hr.jkacan.setmaker.utils.AudioPreviewManager
+import hr.jkacan.setmaker.utils.getServiceOrNull
 
 class SongPickerBottomSheet : BottomSheetDialogFragment() {
 
     private lateinit var adapter: SongAdapter
     private lateinit var songRepository: SongRepository
-    private lateinit var audioPreviewManager: hr.jkacan.setmaker.utils.AudioPreviewManager
+    private lateinit var audioPreviewManager: AudioPreviewManager
+    private lateinit var soundcloudService: SoundcloudService
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var searchBar: EditText
@@ -42,6 +46,7 @@ class SongPickerBottomSheet : BottomSheetDialogFragment() {
         val application = requireActivity().application as SetMakerApplication
         songRepository = application.songRepository
         audioPreviewManager = application.audioPreviewManager
+        soundcloudService = application.soundcloudService
     }
 
     override fun onCreateView(
@@ -67,6 +72,14 @@ class SongPickerBottomSheet : BottomSheetDialogFragment() {
         // Load all saved songs
         val songs = songRepository.getAll().sortedByDescending { it.dateAdded }
 
+        // Load Soundcloud if needed
+        if (songs.any { it.provider == SongProvider.SOUNDCLOUD }) {
+            soundcloudService =
+                (requireActivity().application as SetMakerApplication).soundcloudService
+        }
+
+        val scServiceOrNull = getServiceOrNull(::soundcloudService)
+
         adapter = SongAdapter(
             songs,
             null, // savedSongPlatformIds
@@ -76,7 +89,7 @@ class SongPickerBottomSheet : BottomSheetDialogFragment() {
             },
             onItemLongPress = { },
             audioPreviewManager = audioPreviewManager,
-            soundcloudService = null
+            soundcloudService = scServiceOrNull
         )
 
         recyclerView.adapter = adapter

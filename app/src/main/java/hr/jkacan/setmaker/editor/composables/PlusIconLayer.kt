@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,7 +34,8 @@ fun PlusIconLayer(
     edges: List<UiEdge>,
     nodes: Map<Int, UiNode>,
     onPlusClick: (fromId: Int, toId: Int?) -> Unit,
-    onPlusLongPress: (fromId: Int, toId: Int?) -> Unit
+    onPlusLongPress: (fromId: Int, toId: Int?) -> Unit,
+    draggingLeafEdgeNodeId: Int?
 ) {
     val density = LocalDensity.current
     val nodeWidth = with(density) { 120.dp.toPx() }
@@ -47,7 +49,7 @@ fun PlusIconLayer(
         // Plus icons for regular edges
         edges.forEach { edge ->
             // Use key to ensure proper identity tracking
-            androidx.compose.runtime.key(edge.fromId, edge.toId) {
+            key(edge.fromId, edge.toId) {
                 val fromNode = nodes[edge.fromId]
                 val toNode = nodes[edge.toId]
 
@@ -87,7 +89,7 @@ fun PlusIconLayer(
 
         leafNodes.forEach { leafNode ->
             // Use key to ensure proper identity tracking
-            androidx.compose.runtime.key(leafNode.id) {
+            key(leafNode.id) {
                 val fromPos = calculateNodePosition(
                     leafNode,
                     with(density) { screenWidth.toPx() },
@@ -101,12 +103,13 @@ fun PlusIconLayer(
                 val midX = fromPos.x + nodeWidth / 2f
                 val midY = startY + edgeLength / 2f
 
-                PlusIcon(
-                    x = midX,
-                    y = midY,
-                    onClick = { onPlusClick(leafNode.id, null) },
-                    onLongClick = { onPlusLongPress(leafNode.id, null) }
-                )
+                if (draggingLeafEdgeNodeId != leafNode.id)
+                    PlusIcon(
+                        x = midX,
+                        y = midY,
+                        onClick = { onPlusClick(leafNode.id, null) },
+                        onLongClick = { onPlusLongPress(leafNode.id, null) }
+                    )
             }
         }
     }

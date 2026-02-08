@@ -1,5 +1,6 @@
 package hr.jkacan.setmaker.editor.composables
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -51,7 +52,7 @@ fun SongNode(
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         border = if (isHighlighted) {
-            androidx.compose.foundation.BorderStroke(3.dp, Color.White)
+            BorderStroke(3.dp, Color.White)
         } else null
     ) {
         Column(

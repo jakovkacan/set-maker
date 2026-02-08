@@ -26,6 +26,7 @@ fun EditorCanvas(
     onSwapNodes: (Int, Int) -> Unit,
     onInsertNode: (Int, Int, Int) -> Unit,
     onDeleteNode: (Int) -> Unit,
+    onConnectLeafToNode: (Int, Int) -> Unit,
 ) {
     when {
         state == null -> LoadingState()
@@ -93,6 +94,42 @@ fun EditorCanvas(
                         )
                     }
 
+                    // Draw draggable leaf edges
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .zIndex(0.3f)
+                    ) {
+                        LeafEdgeLayer(
+                            edges = state.edges,
+                            nodes = state.nodes,
+                            canvasState = canvasState,
+                            debugMode = debugMode,
+                            draggingLeafEdgeNodeId = canvasState.draggingLeafEdgeNodeId,
+                            leafEdgeDragOffset = canvasState.leafEdgeDragOffset,
+                            onDragStart = { leafNodeId ->
+                                canvasState.draggingLeafEdgeNodeId = leafNodeId
+                                canvasState.leafEdgeDragOffset = Offset.Zero
+                                canvasState.leafEdgeTargetNodeId = null
+                            },
+                            onDrag = { dragOffset, targetNodeId ->
+                                canvasState.leafEdgeDragOffset = dragOffset
+                                canvasState.leafEdgeTargetNodeId = targetNodeId
+                            },
+                            onDragEnd = {
+                                val leafNodeId = canvasState.draggingLeafEdgeNodeId
+                                val targetNodeId = canvasState.leafEdgeTargetNodeId
+
+                                if (leafNodeId != null && targetNodeId != null) {
+                                    // Connect the leaf node to the target node
+                                    onConnectLeafToNode(leafNodeId, targetNodeId)
+                                }
+
+                                canvasState.resetLeafEdgeDragState()
+                            }
+                        )
+                    }
+
                     // Draw plus icons on edges
                     Box(
                         modifier = Modifier
@@ -108,7 +145,8 @@ fun EditorCanvas(
                                     onAddNodeBranch(fromId)
                                 else
                                     onAddNode(fromId, toId)
-                            }
+                            },
+                            draggingLeafEdgeNodeId = canvasState.draggingLeafEdgeNodeId
                         )
                     }
 

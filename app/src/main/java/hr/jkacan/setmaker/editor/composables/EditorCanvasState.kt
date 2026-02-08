@@ -27,6 +27,11 @@ class EditorCanvasState {
     var highlightedNodeId by mutableStateOf<Int?>(null)
     var highlightedEdge by mutableStateOf<Pair<Int, Int>?>(null)
 
+    // Leaf edge drag state
+    var draggingLeafEdgeNodeId by mutableStateOf<Int?>(null)
+    var leafEdgeDragOffset by mutableStateOf(Offset.Zero)
+    var leafEdgeTargetNodeId by mutableStateOf<Int?>(null)
+
     // Delete zone state
     var isOverDeleteZone by mutableStateOf(false)
 
@@ -42,5 +47,11 @@ class EditorCanvasState {
         highlightedNodeId = null
         highlightedEdge = null
         isOverDeleteZone = false
+    }
+
+    fun resetLeafEdgeDragState() {
+        draggingLeafEdgeNodeId = null
+        leafEdgeDragOffset = Offset.Zero
+        leafEdgeTargetNodeId = null
     }
 }

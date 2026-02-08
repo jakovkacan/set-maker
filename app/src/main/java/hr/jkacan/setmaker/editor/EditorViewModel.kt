@@ -3,8 +3,6 @@ package hr.jkacan.setmaker.editor
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hr.jkacan.setmaker.data.dao.SetGraphRepository
-import hr.jkacan.setmaker.data.dao.SongRepository
-import hr.jkacan.setmaker.editor.EditorState
 import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.computeGraphLayout
 import hr.jkacan.setmaker.models.song.Song
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +13,6 @@ import kotlinx.coroutines.launch
 class EditorViewModel(
     private val setId: Int,
     private val setGraphRepository: SetGraphRepository,
-    private val songRepository: SongRepository
 ) : ViewModel() {
 
     private val _graphState = MutableStateFlow<EditorState?>(null)
@@ -222,5 +219,27 @@ class EditorViewModel(
     fun canDeleteNode(nodeId: Int): Boolean {
         val startNodes = setGraphRepository.getStartNodes(setId)
         return !startNodes.any { it.node.id == nodeId }
+    }
+
+    /**
+     * Connects a leaf node to another existing node by creating an edge.
+     * This is used when dragging a leaf edge line onto another node to merge branches.
+     */
+    fun connectLeafToNode(leafNodeId: Int, targetNodeId: Int) {
+        viewModelScope.launch {
+            try {
+                // Create edge from leaf node to target node
+                setGraphRepository.insertEdge(
+                    setId = setId,
+                    fromNodeId = leafNodeId,
+                    toNodeId = targetNodeId
+                )
+
+                // Refresh the graph
+                loadGraph()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }

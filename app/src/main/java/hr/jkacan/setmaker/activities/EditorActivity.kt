@@ -22,10 +22,9 @@ class EditorActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditorBinding
     private lateinit var setGraphRepository: hr.jkacan.setmaker.data.dao.SetGraphRepository
-    private lateinit var songRepository: hr.jkacan.setmaker.data.dao.SongRepository
     private var currentSetId: Int = -1
     private val viewModel: EditorViewModel by viewModels {
-        EditorViewModelFactory(currentSetId, setGraphRepository, songRepository)
+        EditorViewModelFactory(currentSetId, setGraphRepository)
     }
     private var debugMode by mutableStateOf(false)
 
@@ -49,7 +48,6 @@ class EditorActivity : AppCompatActivity() {
         // Get repositories from application
         val application = application as hr.jkacan.setmaker.SetMakerApplication
         setGraphRepository = application.setGraphRepository
-        songRepository = application.songRepository
 
         // Get set information from intent
         currentSetId = intent.getIntExtra("SET_ID", -1)
@@ -100,7 +98,8 @@ class EditorActivity : AppCompatActivity() {
                 onAddNodeBranch = { from -> showSongPickerForBranch(from) },
                 onSwapNodes = viewModel::swapNodes,
                 onInsertNode = viewModel::insertNodeBetween,
-                onDeleteNode = viewModel::deleteNode
+                onDeleteNode = viewModel::deleteNode,
+                onConnectLeafToNode = viewModel::connectLeafToNode
             )
 
             // Update FAB visibility based on graph state
@@ -154,13 +153,12 @@ class EditorActivity : AppCompatActivity() {
 
 class EditorViewModelFactory(
     private val setId: Int,
-    private val setGraphRepository: hr.jkacan.setmaker.data.dao.SetGraphRepository,
-    private val songRepository: hr.jkacan.setmaker.data.dao.SongRepository
+    private val setGraphRepository: hr.jkacan.setmaker.data.dao.SetGraphRepository
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(EditorViewModel::class.java)) {
-            return EditorViewModel(setId, setGraphRepository, songRepository) as T
+            return EditorViewModel(setId, setGraphRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
