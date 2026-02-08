@@ -6,7 +6,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import hr.jkacan.setmaker.editor.EditorState
-import hr.jkacan.setmaker.editor.composables.EditorCanvasState
+import hr.jkacan.setmaker.editor.EditorCanvasState
 import hr.jkacan.setmaker.models.editor.UiEdge
 import hr.jkacan.setmaker.models.editor.UiNode
 import hr.jkacan.setmaker.models.set.SetEdge

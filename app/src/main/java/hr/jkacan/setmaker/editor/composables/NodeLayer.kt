@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import hr.jkacan.setmaker.editor.EditorCanvasState
 import hr.jkacan.setmaker.editor.gestures.GestureDetector
 import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.calculateNodePositionDp
 import hr.jkacan.setmaker.editor.layout.HORIZONTAL_SPACING

@@ -16,6 +16,7 @@ import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.editor.EditorState
 import hr.jkacan.setmaker.editor.gestures.canvasTransformGestures
 import hr.jkacan.setmaker.editor.gestures.debugTapDetection
+import hr.jkacan.setmaker.editor.rememberEditorCanvasState
 
 @Composable
 fun EditorCanvas(

@@ -1,7 +1,6 @@
 package hr.jkacan.setmaker.editor.composables
 
 import android.os.Vibrator
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -11,7 +10,6 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.runtime.key
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -19,6 +17,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import hr.jkacan.setmaker.editor.EditorCanvasState
 import hr.jkacan.setmaker.editor.gestures.GestureDetector
 import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.calculateNodePosition
 import hr.jkacan.setmaker.editor.layout.HORIZONTAL_SPACING

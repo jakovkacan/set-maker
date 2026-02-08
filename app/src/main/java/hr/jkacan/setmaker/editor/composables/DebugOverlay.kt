@@ -15,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
@@ -24,6 +23,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import hr.jkacan.setmaker.editor.EditorCanvasState
 import hr.jkacan.setmaker.editor.EditorState
 import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.calculateNodePosition
 import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.canvasToScreenCoordinates

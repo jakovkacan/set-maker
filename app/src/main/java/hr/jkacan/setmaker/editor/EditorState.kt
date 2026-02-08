@@ -9,5 +9,5 @@ data class EditorState(
     val edges: List<UiEdge>,
     val draggingNodeId: Int? = null,
     val linkingFromId: Int? = null,
-    val pointerWorld: Offset = Offset.Companion.Unspecified
+    val pointerWorld: Offset = Offset.Unspecified
 )

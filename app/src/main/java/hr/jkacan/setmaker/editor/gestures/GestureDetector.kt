@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
-import hr.jkacan.setmaker.editor.composables.EditorCanvasState
+import hr.jkacan.setmaker.editor.EditorCanvasState
 import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.canvasToScreenCoordinates
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
