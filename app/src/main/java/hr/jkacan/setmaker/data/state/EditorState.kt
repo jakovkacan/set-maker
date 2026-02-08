@@ -9,7 +9,5 @@ data class EditorState(
     val edges: List<UiEdge>,
     val draggingNodeId: Int? = null,
     val linkingFromId: Int? = null,
-    val pointerWorld: Offset = Offset.Unspecified,
-    val pan: Offset = Offset.Zero,
-    val zoom: Float = 1f
+    val pointerWorld: Offset = Offset.Unspecified
 )

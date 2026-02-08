@@ -27,8 +27,6 @@ import kotlin.math.roundToInt
 fun EdgeLayer(
     edges: List<UiEdge>,
     nodes: Map<Int, UiNode>,
-    pan: Offset,
-    zoom: Float,
     debugMode: Boolean = false,
     highlightedEdge: Pair<Int, Int>? = null
 ) {
@@ -57,8 +55,6 @@ fun EdgeLayer(
                     nodeHeight = nodeHeight,
                     horizontalSpacing = horizontalSpacing,
                     verticalSpacing = verticalSpacing,
-                    pan = pan,
-                    zoom = zoom,
                     canvasWidth = size.width,
                     isHighlighted = isHighlighted
                 )
@@ -75,9 +71,7 @@ fun EdgeLayer(
                 leafNode,
                 size.width,
                 horizontalSpacing,
-                verticalSpacing,
-                pan,
-                zoom
+                verticalSpacing
             )
 
             // Start from bottom center of leaf node
@@ -150,16 +144,12 @@ fun EdgeLayer(
                     canvasWidth,
                     horizontalSpacing,
                     verticalSpacing,
-                    pan,
-                    zoom
                 )
                 val toPos = calculateNodePosition(
                     toNode,
                     canvasWidth,
                     horizontalSpacing,
                     verticalSpacing,
-                    pan,
-                    zoom
                 )
 
                 val nodeWidth = with(density) { 120.dp.toPx() }
@@ -195,8 +185,6 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawEdge(
     nodeHeight: Float,
     horizontalSpacing: Float,
     verticalSpacing: Float,
-    pan: Offset,
-    zoom: Float,
     canvasWidth: Float,
     isHighlighted: Boolean = false
 ) {
@@ -205,16 +193,12 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawEdge(
         canvasWidth,
         horizontalSpacing,
         verticalSpacing,
-        pan,
-        zoom
     )
     val toPos = calculateNodePosition(
         toNode,
         canvasWidth,
         horizontalSpacing,
         verticalSpacing,
-        pan,
-        zoom
     )
 
     // Start from bottom center of source node

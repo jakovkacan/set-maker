@@ -33,11 +33,9 @@ import hr.jkacan.setmaker.models.song.Song
 fun SongNode(
     song: Song,
     modifier: Modifier = Modifier,
-    zoom: Float = 1f,
     isDragging: Boolean = false,
     isHighlighted: Boolean = false
 ) {
-
     Card(
         modifier = modifier
             .width(120.dp)

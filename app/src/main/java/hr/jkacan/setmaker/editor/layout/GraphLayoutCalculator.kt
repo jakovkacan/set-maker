@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import hr.jkacan.setmaker.data.state.EditorState
+import hr.jkacan.setmaker.editor.composables.EditorCanvasState
 import hr.jkacan.setmaker.models.editor.UiEdge
 import hr.jkacan.setmaker.models.editor.UiNode
 import hr.jkacan.setmaker.models.set.SetEdge
@@ -129,8 +130,6 @@ object GraphLayoutCalculator {
         return EditorState(
             nodes = uiNodes,
             edges = uiEdges,
-            pan = Offset.Zero,
-            zoom = 1f
         )
     }
 
@@ -139,8 +138,6 @@ object GraphLayoutCalculator {
         canvasWidth: Float,
         horizontalSpacing: Float,
         verticalSpacing: Float,
-        pan: Offset = Offset.Zero,
-        zoom: Float = 1f
     ): Offset {
         val nodeWidth = 120f
 
@@ -157,7 +154,7 @@ object GraphLayoutCalculator {
     }
 
     @Composable
-    fun calculateNodePositionDp(node: UiNode, pan: Offset, zoom: Float): Offset {
+    fun calculateNodePositionDp(node: UiNode): Offset {
         val density = LocalDensity.current
         val horizontalSpacing = with(density) { 180.dp.toPx() }
         val verticalSpacing = with(density) { 220.dp.toPx() }
@@ -169,8 +166,16 @@ object GraphLayoutCalculator {
             canvasWidth,
             horizontalSpacing,
             verticalSpacing,
-            pan,
-            zoom
         )
     }
+
+    fun screenToCanvasCoordinates(
+        screenOffset: Offset,
+        canvasState: EditorCanvasState
+    ): Offset {
+        val canvasX = (screenOffset.x - canvasState.offset.x) / canvasState.scale
+        val canvasY = (screenOffset.y - canvasState.offset.y) / canvasState.scale
+        return Offset(canvasX, canvasY)
+    }
+
 }

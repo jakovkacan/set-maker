@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -16,10 +17,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import hr.jkacan.setmaker.data.state.EditorState
+import hr.jkacan.setmaker.models.editor.UiNode
 
 @Composable
 fun DebugOverlay(
@@ -216,6 +219,74 @@ fun DebugOverlay(
                 fontSize = 11.sp,
                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
             )
+        }
+    }
+}
+
+@Composable
+fun NodeDebugOverlay(
+    node: UiNode,
+    position: Offset,
+    scale: Float,
+    offset: IntOffset
+) {
+    Box(
+        modifier = Modifier
+            .offset { offset }
+            .padding(4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .background(Color(0xCC000000), RoundedCornerShape(4.dp))
+                .padding(4.dp)
+        ) {
+            Column {
+                Text(
+                    text = "ID: ${node.id}",
+                    color = Color.Cyan,
+                    fontSize = 10.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                )
+                Text(
+                    text = "Col: ${node.col}",
+                    color = Color.Green,
+                    fontSize = 9.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                )
+                Text(
+                    text = "Row: ${node.row}",
+                    color = Color.Magenta,
+                    fontSize = 9.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                )
+                Text(
+                    text = "Canvas: (${
+                        String.format(
+                            "%.0f",
+                            position.x
+                        )
+                    }, ${String.format("%.0f", position.y)})",
+                    color = Color.Yellow,
+                    fontSize = 9.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                )
+                Text(
+                    text = "Screen: (${
+                        String.format(
+                            "%.0f",
+                            position.x * scale + offset.x
+                        )
+                    }, ${
+                        String.format(
+                            "%.0f",
+                            position.y * scale + offset.y
+                        )
+                    })",
+                    color = Color(0xFF00FF00),
+                    fontSize = 9.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                )
+            }
         }
     }
 }

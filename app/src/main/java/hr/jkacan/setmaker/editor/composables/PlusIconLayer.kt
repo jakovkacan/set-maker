@@ -1,11 +1,8 @@
 package hr.jkacan.setmaker.editor.composables
 
-import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -18,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -26,22 +22,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import hr.jkacan.setmaker.R
+import hr.jkacan.setmaker.editor.gestures.clickAndLongPress
+import hr.jkacan.setmaker.editor.gestures.UnifiedGestureDetector
 import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.calculateNodePosition
 import hr.jkacan.setmaker.models.editor.UiEdge
 import hr.jkacan.setmaker.models.editor.UiNode
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlin.collections.forEach
 import kotlin.math.roundToInt
 
 @Composable
 fun PlusIconLayer(
     edges: List<UiEdge>,
     nodes: Map<Int, UiNode>,
-    pan: Offset,
-    zoom: Float,
     onPlusClick: (fromId: Int, toId: Int?) -> Unit,
     onPlusLongPress: (fromId: Int, toId: Int?) -> Unit
 ) {
@@ -67,16 +58,12 @@ fun PlusIconLayer(
                         with(density) { screenWidth.toPx() },
                         horizontalSpacing,
                         verticalSpacing,
-                        pan,
-                        zoom
                     )
                     val toPos = calculateNodePosition(
                         toNode,
                         with(density) { screenWidth.toPx() },
                         horizontalSpacing,
                         verticalSpacing,
-                        pan,
-                        zoom
                     )
 
                     // Calculate middle point of the edge (approximation using simple midpoint)
@@ -107,8 +94,6 @@ fun PlusIconLayer(
                     with(density) { screenWidth.toPx() },
                     horizontalSpacing,
                     verticalSpacing,
-                    pan,
-                    zoom
                 )
 
                 // Calculate middle point of the leaf edge
@@ -138,6 +123,9 @@ private fun PlusIcon(
     val density = LocalDensity.current
     val context = LocalContext.current
     val vibrator = context.getSystemService(Vibrator::class.java)
+    val gestureDetector = androidx.compose.runtime.remember(vibrator) {
+        UnifiedGestureDetector(vibrator)
+    }
     val iconSizeDp = 32f
     val iconSizePx = with(density) { iconSizeDp.dp.toPx() }
 
@@ -154,44 +142,7 @@ private fun PlusIcon(
             .background(Color(0xFF2a2a2a))
             .then(
                 if (onLongClick != null) {
-                    Modifier.pointerInput(Unit) {
-                        var longPressJob: kotlinx.coroutines.Job? = null
-
-                        awaitEachGesture {
-                            val down = awaitFirstDown(requireUnconsumed = false)
-                            var longPressTriggered = false
-
-                            // Launch coroutine for long press detection
-                            @OptIn(DelicateCoroutinesApi::class)
-                            longPressJob = GlobalScope.launch {
-                                delay(500) // 500ms long press threshold
-                                longPressTriggered = true
-
-                                // Trigger vibration
-                                @Suppress("MissingPermission")
-                                vibrator?.vibrate(
-                                    VibrationEffect.createOneShot(
-                                        50,
-                                        VibrationEffect.DEFAULT_AMPLITUDE
-                                    )
-                                )
-                            }
-
-                            // Wait for release
-                            do {
-                                val event = awaitPointerEvent()
-                            } while (event.changes.any { it.pressed })
-
-                            // Clean up
-                            longPressJob.cancel()
-
-                            if (longPressTriggered) {
-                                onLongClick()
-                            } else {
-                                onClick()
-                            }
-                        }
-                    }
+                    Modifier.clickAndLongPress(gestureDetector, onClick, onLongClick)
                 } else {
                     Modifier.clickable { onClick() }
                 }

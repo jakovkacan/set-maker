@@ -1,16 +1,12 @@
 package hr.jkacan.setmaker.editor.composables
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
@@ -18,6 +14,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.data.state.EditorState
+import hr.jkacan.setmaker.editor.gestures.canvasTransformGestures
+import hr.jkacan.setmaker.editor.gestures.debugTapDetection
 
 @Composable
 fun EditorCanvas(
@@ -51,41 +49,27 @@ fun EditorCanvas(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(colorResource(id = R.color.background))
-                        .pointerInput(Unit) {
-                            awaitEachGesture {
-                                val down = awaitFirstDown()
-
-                                // Capture tap coordinates for debug
-                                if (debugMode) {
-                                    canvasState.lastTapScreenPos = down.position
-                                    // Calculate canvas position (inverse transform)
-                                    // Transform: screen = canvas * scale + offset
-                                    // Inverse: canvas = (screen - offset) / scale
-                                    canvasState.lastTapCanvasPos = Offset(
-                                        (down.position.x - canvasState.offset.x) / canvasState.scale,
-                                        (down.position.y - canvasState.offset.y) / canvasState.scale
-                                    )
-                                }
+                        .debugTapDetection(
+                            enabled = debugMode,
+                            getCurrentScale = { canvasState.scale },
+                            getCurrentOffset = { canvasState.offset },
+                            onTap = { screenPos, canvasPos ->
+                                canvasState.lastTapScreenPos = screenPos
+                                canvasState.lastTapCanvasPos = canvasPos
                             }
-                        }
-                        .pointerInput(Unit) {
-                            detectTransformGestures { centroid, pan, zoom, _ ->
-                                // 1. Apply zoom limiting
-                                val newScale = (canvasState.scale * zoom).coerceIn(0.5f, 3f)
-
-                                // 2. Zoom towards centroid
-                                canvasState.offset += Offset(
-                                    x = (1 - zoom) * (centroid.x - canvasState.offset.x - centerX),
-                                    y = (1 - zoom) * (centroid.y - canvasState.offset.y - centerY)
-                                )
-
-                                // 3. Update scale after offset adjustment
+                        )
+                        .canvasTransformGestures(
+                            centerX = centerX,
+                            centerY = centerY,
+                            minScale = 0.5f,
+                            maxScale = 3f,
+                            getCurrentScale = { canvasState.scale },
+                            getCurrentOffset = { canvasState.offset },
+                            onTransform = { newScale, newOffset ->
                                 canvasState.scale = newScale
-
-                                // 4. Apply pan
-                                canvasState.offset += pan
+                                canvasState.offset = newOffset
                             }
-                        }
+                        )
                         .graphicsLayer(
                             scaleX = canvasState.scale,
                             scaleY = canvasState.scale,
@@ -103,8 +87,6 @@ fun EditorCanvas(
                         EdgeLayer(
                             edges = state.edges,
                             nodes = state.nodes,
-                            pan = state.pan,
-                            zoom = state.zoom,
                             debugMode = debugMode,
                             highlightedEdge = canvasState.highlightedEdge
                         )
@@ -119,8 +101,6 @@ fun EditorCanvas(
                         PlusIconLayer(
                             edges = state.edges,
                             nodes = state.nodes,
-                            pan = state.pan,
-                            zoom = state.zoom,
                             onPlusClick = onAddNode,
                             onPlusLongPress = { fromId, toId ->
                                 if (toId != null)
@@ -140,10 +120,7 @@ fun EditorCanvas(
                         NodeLayer(
                             nodes = state.nodes.values.toList(),
                             edges = state.edges,
-                            pan = state.pan,
-                            zoom = state.zoom,
-                            scale = canvasState.scale,
-                            offset = canvasState.offset,
+                            canvasState = canvasState,
                             draggingNodeId = canvasState.draggingNodeId,
                             dragOffset = canvasState.dragOffset,
                             debugMode = debugMode,

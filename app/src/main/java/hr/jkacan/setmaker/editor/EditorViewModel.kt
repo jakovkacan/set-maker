@@ -44,9 +44,7 @@ class EditorViewModel(
                     // Empty graph state
                     EditorState(
                         nodes = emptyMap(),
-                        edges = emptyList(),
-                        pan = androidx.compose.ui.geometry.Offset.Zero,
-                        zoom = 1f
+                        edges = emptyList()
                     )
                 } else {
                     computeGraphLayout(
