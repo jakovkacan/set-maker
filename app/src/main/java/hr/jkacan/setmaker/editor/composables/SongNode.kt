@@ -2,6 +2,8 @@ package hr.jkacan.setmaker.editor.composables
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,18 +17,17 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import hr.jkacan.setmaker.R
 import hr.jkacan.setmaker.editor.layout.NODE_WIDTH
 import hr.jkacan.setmaker.models.song.Song
@@ -36,7 +37,10 @@ fun SongNode(
     song: Song,
     modifier: Modifier = Modifier,
     isDragging: Boolean = false,
-    isHighlighted: Boolean = false
+    isHighlighted: Boolean = false,
+    isBuffering: Boolean = false,
+    progress: Float = 0f,
+    onCoverClick: (() -> Unit)? = null
 ) {
     Card(
         modifier = modifier
@@ -62,14 +66,23 @@ fun SongNode(
                 .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            AsyncImage(
-                model = song.coverUrl,
+            val interactionSource = remember { MutableInteractionSource() }
+
+            AnimatedCoverImage(
+                coverUrl = song.coverUrl,
                 contentDescription = "Album cover for ${song.title}",
+                isBuffering = isBuffering,
+                progress = progress,
                 modifier = Modifier
                     .size(100.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color.LightGray),
-                contentScale = ContentScale.Crop
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        enabled = onCoverClick != null && !isDragging
+                    ) {
+                        onCoverClick?.invoke()
+                    }
             )
 
             Spacer(modifier = Modifier.height(8.dp))

@@ -139,6 +139,11 @@ class SongPickerBottomSheet : BottomSheetDialogFragment() {
 
         adapter.updateSongs(filteredSongs, null)
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        audioPreviewManager.stop()
+    }
 }
 
 

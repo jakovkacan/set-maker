@@ -40,7 +40,8 @@ fun NodeLayer(
     onDebugDragUpdate: (screenPos: Offset, canvasPos: Offset) -> Unit = { _, _ -> },
     onDragStart: (Int) -> Unit,
     onDrag: (Offset, Int?, Pair<Int, Int>?) -> Unit,
-    onDragEnd: () -> Unit
+    onDragEnd: () -> Unit,
+    onCoverClick: (Int) -> Unit
 ) {
     val context = LocalContext.current
     val vibrator = context.getSystemService(Vibrator::class.java)
@@ -86,6 +87,8 @@ fun NodeLayer(
             Box(
                 modifier = Modifier.zIndex(if (isDragging) 1f else 0f)
             ) {
+                val isPlayingThisNode = canvasState.playingNodeId == node.id
+
                 SongNode(
                     song = node.song,
                     modifier = Modifier
@@ -117,7 +120,10 @@ fun NodeLayer(
                             }
                         },
                     isDragging = isDragging,
-                    isHighlighted = highlightedNodeId == node.id
+                    isHighlighted = highlightedNodeId == node.id,
+                    isBuffering = isPlayingThisNode && canvasState.isBuffering,
+                    progress = if (isPlayingThisNode) canvasState.playbackProgress else 0f,
+                    onCoverClick = { onCoverClick(node.id) }
                 )
 
                 // Debug overlay for nodes

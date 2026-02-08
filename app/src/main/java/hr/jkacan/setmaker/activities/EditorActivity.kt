@@ -22,6 +22,8 @@ class EditorActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditorBinding
     private lateinit var setGraphRepository: hr.jkacan.setmaker.data.dao.SetGraphRepository
+    private lateinit var audioPreviewManager: hr.jkacan.setmaker.utils.AudioPreviewManager
+    private lateinit var soundcloudService: hr.jkacan.setmaker.services.soundcloud.SoundcloudService
     private var currentSetId: Int = -1
     private val viewModel: EditorViewModel by viewModels {
         EditorViewModelFactory(currentSetId, setGraphRepository)
@@ -48,6 +50,8 @@ class EditorActivity : AppCompatActivity() {
         // Get repositories from application
         val application = application as hr.jkacan.setmaker.SetMakerApplication
         setGraphRepository = application.setGraphRepository
+        audioPreviewManager = application.audioPreviewManager
+        soundcloudService = application.soundcloudService
 
         // Get set information from intent
         currentSetId = intent.getIntExtra("SET_ID", -1)
@@ -99,7 +103,9 @@ class EditorActivity : AppCompatActivity() {
                 onSwapNodes = viewModel::swapNodes,
                 onInsertNode = viewModel::insertNodeBetween,
                 onDeleteNode = viewModel::deleteNode,
-                onConnectLeafToNode = viewModel::connectLeafToNode
+                onConnectLeafToNode = viewModel::connectLeafToNode,
+                audioPreviewManager = audioPreviewManager,
+                soundcloudService = soundcloudService
             )
 
             // Update FAB visibility based on graph state
@@ -127,6 +133,10 @@ class EditorActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        audioPreviewManager.stop()
+    }
 
     override fun onSupportNavigateUp(): Boolean {
         onBackPressedDispatcher.onBackPressed() // Modern way to handle back

@@ -35,6 +35,11 @@ class EditorCanvasState {
     // Delete zone state
     var isOverDeleteZone by mutableStateOf(false)
 
+    // Playing audio state
+    var playingNodeId by mutableStateOf<Int?>(null)
+    var isBuffering by mutableStateOf(false)
+    var playbackProgress by mutableFloatStateOf(0f)
+
     // Debug state
     var lastTapScreenPos by mutableStateOf<Offset?>(null)
     var lastTapCanvasPos by mutableStateOf<Offset?>(null)
@@ -53,5 +58,11 @@ class EditorCanvasState {
         draggingLeafEdgeNodeId = null
         leafEdgeDragOffset = Offset.Zero
         leafEdgeTargetNodeId = null
+    }
+
+    fun resetAudioState() {
+        playingNodeId = null
+        isBuffering = false
+        playbackProgress = 0f
     }
 }

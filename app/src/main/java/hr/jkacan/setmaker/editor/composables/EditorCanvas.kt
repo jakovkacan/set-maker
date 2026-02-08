@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
@@ -17,6 +19,10 @@ import hr.jkacan.setmaker.editor.EditorState
 import hr.jkacan.setmaker.editor.gestures.canvasTransformGestures
 import hr.jkacan.setmaker.editor.gestures.debugTapDetection
 import hr.jkacan.setmaker.editor.rememberEditorCanvasState
+import hr.jkacan.setmaker.models.song.SongProvider
+import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
+import hr.jkacan.setmaker.utils.AudioPreviewManager
+import kotlinx.coroutines.launch
 
 @Composable
 fun EditorCanvas(
@@ -28,6 +34,8 @@ fun EditorCanvas(
     onInsertNode: (Int, Int, Int) -> Unit,
     onDeleteNode: (Int) -> Unit,
     onConnectLeafToNode: (Int, Int) -> Unit,
+    audioPreviewManager: AudioPreviewManager,
+    soundcloudService: SoundcloudService
 ) {
     when {
         state == null -> LoadingState()
@@ -35,6 +43,15 @@ fun EditorCanvas(
         else -> {
 
             val canvasState = rememberEditorCanvasState()
+            val coroutineScope = rememberCoroutineScope()
+
+            // Stop audio playback when this composable is disposed
+            DisposableEffect(Unit) {
+                onDispose {
+                    audioPreviewManager.stop()
+                    canvasState.resetAudioState()
+                }
+            }
 
             // Get screen/canvas center
             val configuration = LocalConfiguration.current
@@ -44,6 +61,52 @@ fun EditorCanvas(
 
             canvasState.centerX = with(density) { screenWidth.toPx() / 2f }
             canvasState.centerY = with(density) { screenHeight.toPx() / 2f }
+
+            // Audio preview click handler
+            val handleCoverClick: (Int) -> Unit = { nodeId ->
+                val node = state.nodes[nodeId]
+                val song = node?.song
+                val previewUrl = song?.previewUrl
+
+                if (previewUrl != null && previewUrl.isNotBlank()) {
+                    if (audioPreviewManager.isPlaying(previewUrl)) {
+                        // Stop if already playing
+                        audioPreviewManager.stop()
+                        canvasState.resetAudioState()
+                    } else {
+                        // Start playing new song
+                        canvasState.playingNodeId = nodeId
+                        canvasState.isBuffering = true
+                        canvasState.playbackProgress = 0f
+
+                        coroutineScope.launch {
+                            val authToken = if (song.provider == SongProvider.SOUNDCLOUD) {
+                                try {
+                                    soundcloudService.getToken()
+                                } catch (e: Exception) {
+                                    null
+                                }
+                            } else {
+                                null
+                            }
+
+                            audioPreviewManager.play(
+                                url = previewUrl,
+                                authToken = authToken,
+                                onBuffering = { isBuffering ->
+                                    canvasState.isBuffering = isBuffering
+                                },
+                                onProgress = { progress ->
+                                    canvasState.playbackProgress = progress
+                                },
+                                onComplete = {
+                                    canvasState.resetAudioState()
+                                }
+                            )
+                        }
+                    }
+                }
+            }
 
             // Outer container for both transformed canvas and untransformed HUD
             Box(modifier = Modifier.fillMaxSize()) {
@@ -146,6 +209,8 @@ fun EditorCanvas(
                                     onAddNodeBranch(fromId)
                                 else
                                     onAddNode(fromId, toId)
+                                audioPreviewManager.stop()
+                                canvasState.resetAudioState()
                             },
                             draggingLeafEdgeNodeId = canvasState.draggingLeafEdgeNodeId
                         )
@@ -219,7 +284,8 @@ fun EditorCanvas(
                                 }
 
                                 canvasState.resetDragState()
-                            }
+                            },
+                            onCoverClick = handleCoverClick
                         )
                     }
                 }
