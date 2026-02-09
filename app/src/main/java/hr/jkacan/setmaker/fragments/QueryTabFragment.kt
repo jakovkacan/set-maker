@@ -1,5 +1,9 @@
 package hr.jkacan.setmaker.fragments
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,6 +24,7 @@ import hr.jkacan.setmaker.databinding.FragmentQueryTabBinding
 import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
 import hr.jkacan.setmaker.utils.AudioPreviewManager
 import hr.jkacan.setmaker.utils.getServiceOrNull
+import hr.jkacan.setmaker.utils.isNetworkAvailable
 import hr.jkacan.setmaker.utils.showToast
 import hr.jkacan.setmaker.viewmodels.QuerySharedViewModel
 
@@ -30,6 +35,7 @@ class QueryTabFragment : Fragment() {
 
     private var emptyStateInitial: View? = null
     private var emptyStateQuery: View? = null
+    private var noInternetState: View? = null
     private var isFirstSearch = true
     private lateinit var adapter: SongAdapter
     private var provider: SongProvider = SongProvider.SPOTIFY
@@ -91,6 +97,8 @@ class QueryTabFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val context = requireContext()
+
         emptyStateInitial = binding.emptyStateInitialStub.inflate()
         binding.queryResultsRecyclerView.layoutManager = LinearLayoutManager(context)
 
@@ -106,7 +114,7 @@ class QueryTabFragment : Fragment() {
             audioPreviewManager = audioPreviewManager,
             savedSongPlatformIds = emptyList(),
             soundcloudService = scServiceOrNull,
-            prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+            prefs = PreferenceManager.getDefaultSharedPreferences(context)
         )
 
         binding.queryResultsRecyclerView.adapter = adapter
@@ -118,9 +126,16 @@ class QueryTabFragment : Fragment() {
 
         // Observe the search results from the shared ViewModel
         sharedViewModel.searchResults.observe(viewLifecycleOwner) { state ->
+            // Check network connectivity for non-local providers
+            if (provider != SongProvider.LOCAL && !isNetworkAvailable(context)) {
+                showNoInternetState()
+                return@observe
+            }
+
             when (state) {
                 is SearchResultState.Loading -> {
                     isFirstSearch = false
+                    hideNoInternetState()
                     binding.loadingIndicator.visibility = View.VISIBLE
                     binding.queryResultsRecyclerView.visibility = View.GONE
                     emptyStateInitial?.visibility = View.GONE
@@ -128,6 +143,7 @@ class QueryTabFragment : Fragment() {
                 }
 
                 is SearchResultState.Success -> {
+                    hideNoInternetState()
                     binding.loadingIndicator.visibility = View.GONE
 
                     // Filter results for this specific tab's provider
@@ -151,6 +167,7 @@ class QueryTabFragment : Fragment() {
                 }
 
                 is SearchResultState.Error -> {
+                    hideNoInternetState()
                     binding.loadingIndicator.visibility = View.GONE
                     binding.queryResultsRecyclerView.visibility = View.GONE
                     emptyStateInitial?.visibility = View.GONE
@@ -160,7 +177,7 @@ class QueryTabFragment : Fragment() {
                     }
 
                     emptyStateQuery?.visibility = View.VISIBLE
-                    showToast(state.message, requireContext())
+                    showToast(state.message, context)
                     Log.e("QueryTabFragment", "Error: ${state.message}")
                 }
             }
@@ -170,5 +187,21 @@ class QueryTabFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun showNoInternetState() {
+        binding.loadingIndicator.visibility = View.GONE
+        binding.queryResultsRecyclerView.visibility = View.GONE
+        emptyStateInitial?.visibility = View.GONE
+        emptyStateQuery?.visibility = View.GONE
+
+        if (noInternetState == null) {
+            noInternetState = binding.noInternetStub.inflate()
+        }
+        noInternetState?.visibility = View.VISIBLE
+    }
+
+    private fun hideNoInternetState() {
+        noInternetState?.visibility = View.GONE
     }
 }

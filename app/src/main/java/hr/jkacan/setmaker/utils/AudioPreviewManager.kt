@@ -13,6 +13,7 @@ import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.core.net.toUri
+import androidx.media3.common.PlaybackException
 
 class AudioPreviewManager(private val context: Context) {
     private var exoPlayer: ExoPlayer? = null
@@ -99,10 +100,11 @@ class AudioPreviewManager(private val context: Context) {
                         }
                     }
 
-                    override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                    override fun onPlayerError(error: PlaybackException) {
                         onBuffering(false)
                         onComplete()
                         stop()
+                        showToast(error.message ?: "Playback Error", context)
                     }
                 })
             }
