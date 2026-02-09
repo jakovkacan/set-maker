@@ -1,9 +1,11 @@
 package hr.jkacan.setmaker.data.dao
 
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
+import androidx.core.net.toUri
+import hr.jkacan.setmaker.data.provider.SetGraphContentProvider
 import hr.jkacan.setmaker.models.set.SetEdge
 import hr.jkacan.setmaker.models.set.SetGraphPath
 import hr.jkacan.setmaker.models.set.SetNode
@@ -13,78 +15,48 @@ import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.utils.parseStringAsDate
 
 class SetGraphRepository(private val context: Context) {
-    private val dbHelper = DatabaseHelper(context)
+    private val contentResolver = context.contentResolver
+    private val dbHelper = DatabaseHelper(context) // Still needed for transactions
 
     // ============ NODE OPERATIONS ============
 
     fun insertNode(setId: Int, songId: Int, note: String? = null): Long {
-        val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(DatabaseContract.SetNodeEntry.COLUMN_SET_ID, setId)
             put(DatabaseContract.SetNodeEntry.COLUMN_SONG_ID, songId)
             put(DatabaseContract.SetNodeEntry.COLUMN_NOTE, note)
         }
-        return db.insert(DatabaseContract.SetNodeEntry.TABLE_NAME, null, values)
+        val uri = contentResolver.insert(SetGraphContentProvider.NODES_URI, values)
+        return uri?.let { ContentUris.parseId(it) } ?: -1
     }
 
     fun updateNode(nodeId: Int, note: String?): Int {
-        val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(DatabaseContract.SetNodeEntry.COLUMN_NOTE, note)
         }
-        val selection = "${DatabaseContract.SetNodeEntry.COLUMN_ID} = ?"
-        val selectionArgs = arrayOf(nodeId.toString())
-        return db.update(
-            DatabaseContract.SetNodeEntry.TABLE_NAME,
-            values,
-            selection,
-            selectionArgs
-        )
+        val uri = ContentUris.withAppendedId(SetGraphContentProvider.NODES_URI, nodeId.toLong())
+        return contentResolver.update(uri, values, null, null)
     }
 
     fun deleteNode(nodeId: Int): Int {
-        val db = dbHelper.writableDatabase
-        val selection = "${DatabaseContract.SetNodeEntry.COLUMN_ID} = ?"
-        val selectionArgs = arrayOf(nodeId.toString())
-        return db.delete(
-            DatabaseContract.SetNodeEntry.TABLE_NAME,
-            selection,
-            selectionArgs
-        )
+        val uri = ContentUris.withAppendedId(SetGraphContentProvider.NODES_URI, nodeId.toLong())
+        return contentResolver.delete(uri, null, null)
     }
 
     fun getNodeById(nodeId: Int): SetNode? {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            DatabaseContract.SetNodeEntry.TABLE_NAME,
-            null,
-            "${DatabaseContract.SetNodeEntry.COLUMN_ID} = ?",
-            arrayOf(nodeId.toString()),
-            null,
-            null,
-            null
-        )
-
-        return cursor.use {
+        val uri = ContentUris.withAppendedId(SetGraphContentProvider.NODES_URI, nodeId.toLong())
+        val cursor = contentResolver.query(uri, null, null, null, null)
+        return cursor?.use {
             if (it.moveToFirst()) cursorToNode(it) else null
         }
     }
 
     fun getNodesBySet(setId: Int): List<SetNode> {
         val nodes = mutableListOf<SetNode>()
-        val db = dbHelper.readableDatabase
+        val uri = "content://${SetGraphContentProvider.AUTHORITY}/nodes/set/$setId".toUri()
+        val cursor = contentResolver.query(uri, null, null, null, null)
 
-        val cursor = db.query(
-            DatabaseContract.SetNodeEntry.TABLE_NAME,
-            null,
-            "${DatabaseContract.SetNodeEntry.COLUMN_SET_ID} = ?",
-            arrayOf(setId.toString()),
-            null,
-            null,
-            "${DatabaseContract.SetNodeEntry.COLUMN_ID} ASC"
-        )
-
-        cursor.use {
+        cursor?.use {
             while (it.moveToNext()) {
                 nodes.add(cursorToNode(it))
             }
@@ -95,25 +67,10 @@ class SetGraphRepository(private val context: Context) {
 
     fun getNodesWithSongsBySet(setId: Int): List<SetNodeWithSong> {
         val nodesWithSongs = mutableListOf<SetNodeWithSong>()
-        val db = dbHelper.readableDatabase
+        val uri = "content://${SetGraphContentProvider.AUTHORITY}/nodes/set/$setId/with_songs".toUri()
+        val cursor = contentResolver.query(uri, null, null, null, null)
 
-        val query = """
-            SELECT 
-                n.${DatabaseContract.SetNodeEntry.COLUMN_ID} as node_id,
-                n.${DatabaseContract.SetNodeEntry.COLUMN_SET_ID},
-                n.${DatabaseContract.SetNodeEntry.COLUMN_SONG_ID},
-                n.${DatabaseContract.SetNodeEntry.COLUMN_NOTE},
-                s.*
-            FROM ${DatabaseContract.SetNodeEntry.TABLE_NAME} n
-            INNER JOIN ${DatabaseContract.SongEntry.TABLE_NAME} s
-            ON n.${DatabaseContract.SetNodeEntry.COLUMN_SONG_ID} = s.${DatabaseContract.SongEntry.COLUMN_ID}
-            WHERE n.${DatabaseContract.SetNodeEntry.COLUMN_SET_ID} = ?
-            ORDER BY n.${DatabaseContract.SetNodeEntry.COLUMN_ID} ASC
-        """
-
-        val cursor = db.rawQuery(query, arrayOf(setId.toString()))
-
-        cursor.use {
+        cursor?.use {
             while (it.moveToNext()) {
                 val node = SetNode(
                     id = it.getInt(it.getColumnIndexOrThrow("node_id")),
@@ -158,7 +115,6 @@ class SetGraphRepository(private val context: Context) {
         ord: Int = 0,
         kind: String? = null
     ): Long {
-        val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(DatabaseContract.SetEdgeEntry.COLUMN_SET_ID, setId)
             put(DatabaseContract.SetEdgeEntry.COLUMN_FROM_NODE_ID, fromNodeId)
@@ -166,65 +122,59 @@ class SetGraphRepository(private val context: Context) {
             put(DatabaseContract.SetEdgeEntry.COLUMN_ORD, ord)
             put(DatabaseContract.SetEdgeEntry.COLUMN_KIND, kind)
         }
-        return db.insertWithOnConflict(
-            DatabaseContract.SetEdgeEntry.TABLE_NAME,
-            null,
-            values,
-            SQLiteDatabase.CONFLICT_IGNORE
-        )
+        val uri = contentResolver.insert(SetGraphContentProvider.EDGES_URI, values)
+        return uri?.let { ContentUris.parseId(it) } ?: -1
     }
 
     fun updateEdge(edgeId: Int, ord: Int, kind: String?): Int {
-        val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(DatabaseContract.SetEdgeEntry.COLUMN_ORD, ord)
             put(DatabaseContract.SetEdgeEntry.COLUMN_KIND, kind)
         }
-        val selection = "${DatabaseContract.SetEdgeEntry.COLUMN_ID} = ?"
-        val selectionArgs = arrayOf(edgeId.toString())
-        return db.update(
-            DatabaseContract.SetEdgeEntry.TABLE_NAME,
-            values,
-            selection,
-            selectionArgs
-        )
+        val uri = ContentUris.withAppendedId(SetGraphContentProvider.EDGES_URI, edgeId.toLong())
+        return contentResolver.update(uri, values, null, null)
     }
 
     fun deleteEdge(edgeId: Int): Int {
-        val db = dbHelper.writableDatabase
-        val selection = "${DatabaseContract.SetEdgeEntry.COLUMN_ID} = ?"
-        val selectionArgs = arrayOf(edgeId.toString())
-        return db.delete(
-            DatabaseContract.SetEdgeEntry.TABLE_NAME,
-            selection,
-            selectionArgs
-        )
+        val uri = ContentUris.withAppendedId(SetGraphContentProvider.EDGES_URI, edgeId.toLong())
+        return contentResolver.delete(uri, null, null)
     }
 
     fun deleteEdgeBetweenNodes(setId: Int, fromNodeId: Int, toNodeId: Int): Int {
-        val db = dbHelper.writableDatabase
         val selection = "${DatabaseContract.SetEdgeEntry.COLUMN_SET_ID} = ? AND " +
                 "${DatabaseContract.SetEdgeEntry.COLUMN_FROM_NODE_ID} = ? AND " +
                 "${DatabaseContract.SetEdgeEntry.COLUMN_TO_NODE_ID} = ?"
         val selectionArgs = arrayOf(setId.toString(), fromNodeId.toString(), toNodeId.toString())
-        return db.delete(
-            DatabaseContract.SetEdgeEntry.TABLE_NAME,
-            selection,
-            selectionArgs
-        )
+        return contentResolver.delete(SetGraphContentProvider.EDGES_URI, selection, selectionArgs)
     }
 
     /**
      * Swaps two nodes by swapping all their edges in a single transaction.
      * This avoids cascade deletion issues by collecting all edge data first,
      * then deleting and recreating edges atomically.
+     * Uses direct database access within transaction to avoid ANR.
      */
     fun swapNodesTransaction(setId: Int, node1Id: Int, node2Id: Int) {
         val db = dbHelper.writableDatabase
         db.beginTransaction()
         try {
-            // Get all edges for the set
-            val edges = getEdgesBySet(setId)
+            // Query all edges for the set directly from database
+            val cursor = db.query(
+                DatabaseContract.SetEdgeEntry.TABLE_NAME,
+                null,
+                "${DatabaseContract.SetEdgeEntry.COLUMN_SET_ID} = ?",
+                arrayOf(setId.toString()),
+                null,
+                null,
+                null
+            )
+
+            val edges = mutableListOf<SetEdge>()
+            cursor.use {
+                while (it.moveToNext()) {
+                    edges.add(cursorToEdge(it))
+                }
+            }
 
             // Find edges connected to node1 (excluding edges between node1 and node2)
             val node1IncomingEdges = edges.filter { it.toNodeId == node1Id && it.fromNodeId != node2Id }
@@ -238,7 +188,7 @@ class SetGraphRepository(private val context: Context) {
             val edge1to2 = edges.firstOrNull { it.fromNodeId == node1Id && it.toNodeId == node2Id }
             val edge2to1 = edges.firstOrNull { it.fromNodeId == node2Id && it.toNodeId == node1Id }
 
-            // Delete all edges connected to both nodes
+            // Delete all edges connected to both nodes using direct SQL
             val edgesToDelete = (node1IncomingEdges + node1OutgoingEdges + node2IncomingEdges + node2OutgoingEdges)
                 .map { it.id }
                 .distinct()
@@ -248,72 +198,55 @@ class SetGraphRepository(private val context: Context) {
             edge2to1?.let { edgesToDelete.add(it.id) }
 
             for (edgeId in edgesToDelete) {
-                deleteEdge(edgeId)
+                db.delete(
+                    DatabaseContract.SetEdgeEntry.TABLE_NAME,
+                    "${DatabaseContract.SetEdgeEntry.COLUMN_ID} = ?",
+                    arrayOf(edgeId.toString())
+                )
+            }
+
+            // Helper function to insert edge directly into database
+            fun insertEdgeDirect(fromId: Int, toId: Int, ord: Int, kind: String?) {
+                val values = ContentValues().apply {
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_SET_ID, setId)
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_FROM_NODE_ID, fromId)
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_TO_NODE_ID, toId)
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_ORD, ord)
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_KIND, kind)
+                }
+                db.insert(DatabaseContract.SetEdgeEntry.TABLE_NAME, null, values)
             }
 
             // Recreate edges with swapped node IDs
             node1IncomingEdges.forEach { edge ->
-                insertEdge(
-                    setId = setId,
-                    fromNodeId = edge.fromNodeId,
-                    toNodeId = node2Id,
-                    ord = edge.ord,
-                    kind = edge.kind
-                )
+                insertEdgeDirect(edge.fromNodeId, node2Id, edge.ord, edge.kind)
             }
 
             node1OutgoingEdges.forEach { edge ->
-                insertEdge(
-                    setId = setId,
-                    fromNodeId = node2Id,
-                    toNodeId = edge.toNodeId,
-                    ord = edge.ord,
-                    kind = edge.kind
-                )
+                insertEdgeDirect(node2Id, edge.toNodeId, edge.ord, edge.kind)
             }
 
             node2IncomingEdges.forEach { edge ->
-                insertEdge(
-                    setId = setId,
-                    fromNodeId = edge.fromNodeId,
-                    toNodeId = node1Id,
-                    ord = edge.ord,
-                    kind = edge.kind
-                )
+                insertEdgeDirect(edge.fromNodeId, node1Id, edge.ord, edge.kind)
             }
 
             node2OutgoingEdges.forEach { edge ->
-                insertEdge(
-                    setId = setId,
-                    fromNodeId = node1Id,
-                    toNodeId = edge.toNodeId,
-                    ord = edge.ord,
-                    kind = edge.kind
-                )
+                insertEdgeDirect(node1Id, edge.toNodeId, edge.ord, edge.kind)
             }
 
             // Recreate edge between nodes (swapped)
             edge1to2?.let { edge ->
-                insertEdge(
-                    setId = setId,
-                    fromNodeId = node2Id,
-                    toNodeId = node1Id,
-                    ord = edge.ord,
-                    kind = edge.kind
-                )
+                insertEdgeDirect(node2Id, node1Id, edge.ord, edge.kind)
             }
 
             edge2to1?.let { edge ->
-                insertEdge(
-                    setId = setId,
-                    fromNodeId = node1Id,
-                    toNodeId = node2Id,
-                    ord = edge.ord,
-                    kind = edge.kind
-                )
+                insertEdgeDirect(node1Id, node2Id, edge.ord, edge.kind)
             }
 
             db.setTransactionSuccessful()
+
+            // Notify ContentResolver of changes after transaction completes
+            context.contentResolver.notifyChange(SetGraphContentProvider.EDGES_URI, null)
         } finally {
             db.endTransaction()
         }
@@ -322,13 +255,29 @@ class SetGraphRepository(private val context: Context) {
     /**
      * Inserts a node between two nodes in a single transaction.
      * This avoids cascade deletion issues.
+     * Uses direct database access within transaction to avoid ANR.
      */
     fun insertNodeBetweenTransaction(setId: Int, draggedId: Int, fromId: Int, toId: Int) {
         val db = dbHelper.writableDatabase
         db.beginTransaction()
         try {
-            // Get all edges for the set
-            val edges = getEdgesBySet(setId)
+            // Get all edges for the set directly from database
+            val cursor = db.query(
+                DatabaseContract.SetEdgeEntry.TABLE_NAME,
+                null,
+                "${DatabaseContract.SetEdgeEntry.COLUMN_SET_ID} = ?",
+                arrayOf(setId.toString()),
+                null,
+                null,
+                null
+            )
+
+            val edges = mutableListOf<SetEdge>()
+            cursor.use {
+                while (it.moveToNext()) {
+                    edges.add(cursorToEdge(it))
+                }
+            }
 
             // Find edges connected to the dragged node
             val draggedIncomingEdges = edges.filter { it.toNodeId == draggedId }
@@ -338,43 +287,58 @@ class SetGraphRepository(private val context: Context) {
             val draggedIncomingData = draggedIncomingEdges.map { Triple(it.fromNodeId, it.ord, it.kind) }
             val draggedOutgoingData = draggedOutgoingEdges.map { Triple(it.toNodeId, it.ord, it.kind) }
 
+            // Helper function to delete edge directly from database
+            fun deleteEdgeDirect(edgeId: Int) {
+                db.delete(
+                    DatabaseContract.SetEdgeEntry.TABLE_NAME,
+                    "${DatabaseContract.SetEdgeEntry.COLUMN_ID} = ?",
+                    arrayOf(edgeId.toString())
+                )
+            }
+
+            // Helper function to insert edge directly into database
+            fun insertEdgeDirect(fromNodeId: Int, toNodeId: Int, ord: Int = 0, kind: String? = null) {
+                val values = ContentValues().apply {
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_SET_ID, setId)
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_FROM_NODE_ID, fromNodeId)
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_TO_NODE_ID, toNodeId)
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_ORD, ord)
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_KIND, kind)
+                }
+                db.insert(DatabaseContract.SetEdgeEntry.TABLE_NAME, null, values)
+            }
+
             // Remove the dragged node from its current position
-            draggedIncomingEdges.forEach { deleteEdge(it.id) }
-            draggedOutgoingEdges.forEach { deleteEdge(it.id) }
+            draggedIncomingEdges.forEach { deleteEdgeDirect(it.id) }
+            draggedOutgoingEdges.forEach { deleteEdgeDirect(it.id) }
 
             // Delete the edge between fromNode and toNode
-            deleteEdgeBetweenNodes(setId, fromId, toId)
+            db.delete(
+                DatabaseContract.SetEdgeEntry.TABLE_NAME,
+                "${DatabaseContract.SetEdgeEntry.COLUMN_SET_ID} = ? AND " +
+                        "${DatabaseContract.SetEdgeEntry.COLUMN_FROM_NODE_ID} = ? AND " +
+                        "${DatabaseContract.SetEdgeEntry.COLUMN_TO_NODE_ID} = ?",
+                arrayOf(setId.toString(), fromId.toString(), toId.toString())
+            )
 
             // Reconnect orphaned nodes from dragged node's previous position
             // If dragged node had incoming edges, connect them to its outgoing targets
             if (draggedIncomingData.isNotEmpty() && draggedOutgoingData.isNotEmpty()) {
                 for (incoming in draggedIncomingData) {
                     for (outgoing in draggedOutgoingData) {
-                        insertEdge(
-                            setId = setId,
-                            fromNodeId = incoming.first,
-                            toNodeId = outgoing.first,
-                            ord = outgoing.second,
-                            kind = outgoing.third
-                        )
+                        insertEdgeDirect(incoming.first, outgoing.first, outgoing.second, outgoing.third)
                     }
                 }
             }
 
             // Insert the dragged node between fromNode and toNode
-            insertEdge(
-                setId = setId,
-                fromNodeId = fromId,
-                toNodeId = draggedId
-            )
-
-            insertEdge(
-                setId = setId,
-                fromNodeId = draggedId,
-                toNodeId = toId
-            )
+            insertEdgeDirect(fromId, draggedId)
+            insertEdgeDirect(draggedId, toId)
 
             db.setTransactionSuccessful()
+
+            // Notify ContentResolver of changes after transaction completes
+            context.contentResolver.notifyChange(SetGraphContentProvider.EDGES_URI, null)
         } finally {
             db.endTransaction()
         }
@@ -384,13 +348,29 @@ class SetGraphRepository(private val context: Context) {
      * Deletes a node and reconnects its parent to all its children in a single transaction.
      * This preserves the graph structure by maintaining connectivity.
      * For branching situations, all children are linked to the parent node.
+     * Uses direct database access within transaction to avoid ANR.
      */
     fun deleteNodeTransaction(setId: Int, nodeId: Int) {
         val db = dbHelper.writableDatabase
         db.beginTransaction()
         try {
-            // Get all edges for the set
-            val edges = getEdgesBySet(setId)
+            // Get all edges for the set directly from database
+            val cursor = db.query(
+                DatabaseContract.SetEdgeEntry.TABLE_NAME,
+                null,
+                "${DatabaseContract.SetEdgeEntry.COLUMN_SET_ID} = ?",
+                arrayOf(setId.toString()),
+                null,
+                null,
+                null
+            )
+
+            val edges = mutableListOf<SetEdge>()
+            cursor.use {
+                while (it.moveToNext()) {
+                    edges.add(cursorToEdge(it))
+                }
+            }
 
             // Find edges connected to the node being deleted
             val incomingEdges = edges.filter { it.toNodeId == nodeId }
@@ -402,28 +382,56 @@ class SetGraphRepository(private val context: Context) {
             // Store children nodes data (nodes this node points to)
             val childrenNodes = outgoingEdges.map { Triple(it.toNodeId, it.ord, it.kind) }
 
+            // Helper function to delete edge directly from database
+            fun deleteEdgeDirect(edgeId: Int) {
+                db.delete(
+                    DatabaseContract.SetEdgeEntry.TABLE_NAME,
+                    "${DatabaseContract.SetEdgeEntry.COLUMN_ID} = ?",
+                    arrayOf(edgeId.toString())
+                )
+            }
+
+            // Helper function to insert edge directly into database
+            fun insertEdgeDirect(fromNodeId: Int, toNodeId: Int, ord: Int = 0, kind: String? = null) {
+                val values = ContentValues().apply {
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_SET_ID, setId)
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_FROM_NODE_ID, fromNodeId)
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_TO_NODE_ID, toNodeId)
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_ORD, ord)
+                    put(DatabaseContract.SetEdgeEntry.COLUMN_KIND, kind)
+                }
+                db.insert(DatabaseContract.SetEdgeEntry.TABLE_NAME, null, values)
+            }
+
             // Delete all edges connected to the node
-            incomingEdges.forEach { deleteEdge(it.id) }
-            outgoingEdges.forEach { deleteEdge(it.id) }
+            incomingEdges.forEach { deleteEdgeDirect(it.id) }
+            outgoingEdges.forEach { deleteEdgeDirect(it.id) }
 
             // Reconnect parent nodes to children nodes
             // For each parent, create edges to all children
             for (parent in parentNodes) {
                 for (child in childrenNodes) {
-                    insertEdge(
-                        setId = setId,
-                        fromNodeId = parent.first,
-                        toNodeId = child.first,
-                        ord = child.second, // Preserve the child's edge order
-                        kind = child.third   // Preserve the child's edge kind
+                    insertEdgeDirect(
+                        parent.first,
+                        child.first,
+                        child.second, // Preserve the child's edge order
+                        child.third   // Preserve the child's edge kind
                     )
                 }
             }
 
-            // Delete the node itself
-            deleteNode(nodeId)
+            // Delete the node itself using direct database access
+            db.delete(
+                DatabaseContract.SetNodeEntry.TABLE_NAME,
+                "${DatabaseContract.SetNodeEntry.COLUMN_ID} = ?",
+                arrayOf(nodeId.toString())
+            )
 
             db.setTransactionSuccessful()
+
+            // Notify ContentResolver of changes after transaction completes
+            context.contentResolver.notifyChange(SetGraphContentProvider.EDGES_URI, null)
+            context.contentResolver.notifyChange(SetGraphContentProvider.NODES_URI, null)
         } finally {
             db.endTransaction()
         }
@@ -431,19 +439,10 @@ class SetGraphRepository(private val context: Context) {
 
     fun getEdgesBySet(setId: Int): List<SetEdge> {
         val edges = mutableListOf<SetEdge>()
-        val db = dbHelper.readableDatabase
+        val uri = "content://${SetGraphContentProvider.AUTHORITY}/edges/set/$setId".toUri()
+        val cursor = contentResolver.query(uri, null, null, null, null)
 
-        val cursor = db.query(
-            DatabaseContract.SetEdgeEntry.TABLE_NAME,
-            null,
-            "${DatabaseContract.SetEdgeEntry.COLUMN_SET_ID} = ?",
-            arrayOf(setId.toString()),
-            null,
-            null,
-            "${DatabaseContract.SetEdgeEntry.COLUMN_FROM_NODE_ID} ASC, ${DatabaseContract.SetEdgeEntry.COLUMN_ORD} ASC"
-        )
-
-        cursor.use {
+        cursor?.use {
             while (it.moveToNext()) {
                 edges.add(cursorToEdge(it))
             }
@@ -454,23 +453,10 @@ class SetGraphRepository(private val context: Context) {
 
     fun getOutgoingEdges(setId: Int, fromNodeId: Int): List<SetEdge> {
         val edges = mutableListOf<SetEdge>()
-        val db = dbHelper.readableDatabase
+        val uri = "content://${SetGraphContentProvider.AUTHORITY}/edges/set/$setId/outgoing/$fromNodeId".toUri()
+        val cursor = contentResolver.query(uri, null, null, null, null)
 
-        val selection = "${DatabaseContract.SetEdgeEntry.COLUMN_SET_ID} = ? AND " +
-                "${DatabaseContract.SetEdgeEntry.COLUMN_FROM_NODE_ID} = ?"
-        val selectionArgs = arrayOf(setId.toString(), fromNodeId.toString())
-
-        val cursor = db.query(
-            DatabaseContract.SetEdgeEntry.TABLE_NAME,
-            null,
-            selection,
-            selectionArgs,
-            null,
-            null,
-            "${DatabaseContract.SetEdgeEntry.COLUMN_ORD} ASC"
-        )
-
-        cursor.use {
+        cursor?.use {
             while (it.moveToNext()) {
                 edges.add(cursorToEdge(it))
             }
@@ -481,23 +467,10 @@ class SetGraphRepository(private val context: Context) {
 
     fun getIncomingEdges(setId: Int, toNodeId: Int): List<SetEdge> {
         val edges = mutableListOf<SetEdge>()
-        val db = dbHelper.readableDatabase
+        val uri = "content://${SetGraphContentProvider.AUTHORITY}/edges/set/$setId/incoming/$toNodeId".toUri()
+        val cursor = contentResolver.query(uri, null, null, null, null)
 
-        val selection = "${DatabaseContract.SetEdgeEntry.COLUMN_SET_ID} = ? AND " +
-                "${DatabaseContract.SetEdgeEntry.COLUMN_TO_NODE_ID} = ?"
-        val selectionArgs = arrayOf(setId.toString(), toNodeId.toString())
-
-        val cursor = db.query(
-            DatabaseContract.SetEdgeEntry.TABLE_NAME,
-            null,
-            selection,
-            selectionArgs,
-            null,
-            null,
-            "${DatabaseContract.SetEdgeEntry.COLUMN_ORD} ASC"
-        )
-
-        cursor.use {
+        cursor?.use {
             while (it.moveToNext()) {
                 edges.add(cursorToEdge(it))
             }
@@ -510,30 +483,10 @@ class SetGraphRepository(private val context: Context) {
 
     fun getStartNodes(setId: Int): List<SetNodeWithSong> {
         val startNodes = mutableListOf<SetNodeWithSong>()
-        val db = dbHelper.readableDatabase
+        val uri = "content://${SetGraphContentProvider.AUTHORITY}/nodes/set/$setId/start".toUri()
+        val cursor = contentResolver.query(uri, null, null, null, null)
 
-        val query = """
-            SELECT 
-                n.${DatabaseContract.SetNodeEntry.COLUMN_ID} as node_id,
-                n.${DatabaseContract.SetNodeEntry.COLUMN_SET_ID},
-                n.${DatabaseContract.SetNodeEntry.COLUMN_SONG_ID},
-                n.${DatabaseContract.SetNodeEntry.COLUMN_NOTE},
-                s.*
-            FROM ${DatabaseContract.SetNodeEntry.TABLE_NAME} n
-            INNER JOIN ${DatabaseContract.SongEntry.TABLE_NAME} s
-            ON n.${DatabaseContract.SetNodeEntry.COLUMN_SONG_ID} = s.${DatabaseContract.SongEntry.COLUMN_ID}
-            WHERE n.${DatabaseContract.SetNodeEntry.COLUMN_SET_ID} = ?
-            AND n.${DatabaseContract.SetNodeEntry.COLUMN_ID} NOT IN (
-                SELECT DISTINCT ${DatabaseContract.SetEdgeEntry.COLUMN_TO_NODE_ID}
-                FROM ${DatabaseContract.SetEdgeEntry.TABLE_NAME}
-                WHERE ${DatabaseContract.SetEdgeEntry.COLUMN_SET_ID} = ?
-            )
-            ORDER BY n.${DatabaseContract.SetNodeEntry.COLUMN_ID} ASC
-        """
-
-        val cursor = db.rawQuery(query, arrayOf(setId.toString(), setId.toString()))
-
-        cursor.use {
+        cursor?.use {
             while (it.moveToNext()) {
                 startNodes.add(cursorToNodeWithSong(it))
             }
@@ -544,30 +497,10 @@ class SetGraphRepository(private val context: Context) {
 
     fun getEndNodes(setId: Int): List<SetNodeWithSong> {
         val endNodes = mutableListOf<SetNodeWithSong>()
-        val db = dbHelper.readableDatabase
+        val uri = "content://${SetGraphContentProvider.AUTHORITY}/nodes/set/$setId/end".toUri()
+        val cursor = contentResolver.query(uri, null, null, null, null)
 
-        val query = """
-            SELECT 
-                n.${DatabaseContract.SetNodeEntry.COLUMN_ID} as node_id,
-                n.${DatabaseContract.SetNodeEntry.COLUMN_SET_ID},
-                n.${DatabaseContract.SetNodeEntry.COLUMN_SONG_ID},
-                n.${DatabaseContract.SetNodeEntry.COLUMN_NOTE},
-                s.*
-            FROM ${DatabaseContract.SetNodeEntry.TABLE_NAME} n
-            INNER JOIN ${DatabaseContract.SongEntry.TABLE_NAME} s
-            ON n.${DatabaseContract.SetNodeEntry.COLUMN_SONG_ID} = s.${DatabaseContract.SongEntry.COLUMN_ID}
-            WHERE n.${DatabaseContract.SetNodeEntry.COLUMN_SET_ID} = ?
-            AND n.${DatabaseContract.SetNodeEntry.COLUMN_ID} NOT IN (
-                SELECT DISTINCT ${DatabaseContract.SetEdgeEntry.COLUMN_FROM_NODE_ID}
-                FROM ${DatabaseContract.SetEdgeEntry.TABLE_NAME}
-                WHERE ${DatabaseContract.SetEdgeEntry.COLUMN_SET_ID} = ?
-            )
-            ORDER BY n.${DatabaseContract.SetNodeEntry.COLUMN_ID} ASC
-        """
-
-        val cursor = db.rawQuery(query, arrayOf(setId.toString(), setId.toString()))
-
-        cursor.use {
+        cursor?.use {
             while (it.moveToNext()) {
                 endNodes.add(cursorToNodeWithSong(it))
             }
@@ -578,30 +511,10 @@ class SetGraphRepository(private val context: Context) {
 
     fun getNextNodes(setId: Int, currentNodeId: Int): List<SetNodeWithSong> {
         val nextNodes = mutableListOf<SetNodeWithSong>()
-        val db = dbHelper.readableDatabase
+        val uri = "content://${SetGraphContentProvider.AUTHORITY}/nodes/set/$setId/next/$currentNodeId".toUri()
+        val cursor = contentResolver.query(uri, null, null, null, null)
 
-        val query = """
-            SELECT 
-                n.${DatabaseContract.SetNodeEntry.COLUMN_ID} as node_id,
-                n.${DatabaseContract.SetNodeEntry.COLUMN_SET_ID},
-                n.${DatabaseContract.SetNodeEntry.COLUMN_SONG_ID},
-                n.${DatabaseContract.SetNodeEntry.COLUMN_NOTE},
-                s.*,
-                e.${DatabaseContract.SetEdgeEntry.COLUMN_ORD},
-                e.${DatabaseContract.SetEdgeEntry.COLUMN_KIND}
-            FROM ${DatabaseContract.SetEdgeEntry.TABLE_NAME} e
-            INNER JOIN ${DatabaseContract.SetNodeEntry.TABLE_NAME} n
-            ON e.${DatabaseContract.SetEdgeEntry.COLUMN_TO_NODE_ID} = n.${DatabaseContract.SetNodeEntry.COLUMN_ID}
-            INNER JOIN ${DatabaseContract.SongEntry.TABLE_NAME} s
-            ON n.${DatabaseContract.SetNodeEntry.COLUMN_SONG_ID} = s.${DatabaseContract.SongEntry.COLUMN_ID}
-            WHERE e.${DatabaseContract.SetEdgeEntry.COLUMN_SET_ID} = ?
-            AND e.${DatabaseContract.SetEdgeEntry.COLUMN_FROM_NODE_ID} = ?
-            ORDER BY e.${DatabaseContract.SetEdgeEntry.COLUMN_ORD} ASC
-        """
-
-        val cursor = db.rawQuery(query, arrayOf(setId.toString(), currentNodeId.toString()))
-
-        cursor.use {
+        cursor?.use {
             while (it.moveToNext()) {
                 nextNodes.add(cursorToNodeWithSong(it))
             }
@@ -612,28 +525,10 @@ class SetGraphRepository(private val context: Context) {
 
     fun getPreviousNodes(setId: Int, currentNodeId: Int): List<SetNodeWithSong> {
         val prevNodes = mutableListOf<SetNodeWithSong>()
-        val db = dbHelper.readableDatabase
+        val uri = "content://${SetGraphContentProvider.AUTHORITY}/nodes/set/$setId/previous/$currentNodeId".toUri()
+        val cursor = contentResolver.query(uri, null, null, null, null)
 
-        val query = """
-            SELECT 
-                n.${DatabaseContract.SetNodeEntry.COLUMN_ID} as node_id,
-                n.${DatabaseContract.SetNodeEntry.COLUMN_SET_ID},
-                n.${DatabaseContract.SetNodeEntry.COLUMN_SONG_ID},
-                n.${DatabaseContract.SetNodeEntry.COLUMN_NOTE},
-                s.*
-            FROM ${DatabaseContract.SetEdgeEntry.TABLE_NAME} e
-            INNER JOIN ${DatabaseContract.SetNodeEntry.TABLE_NAME} n
-            ON e.${DatabaseContract.SetEdgeEntry.COLUMN_FROM_NODE_ID} = n.${DatabaseContract.SetNodeEntry.COLUMN_ID}
-            INNER JOIN ${DatabaseContract.SongEntry.TABLE_NAME} s
-            ON n.${DatabaseContract.SetNodeEntry.COLUMN_SONG_ID} = s.${DatabaseContract.SongEntry.COLUMN_ID}
-            WHERE e.${DatabaseContract.SetEdgeEntry.COLUMN_SET_ID} = ?
-            AND e.${DatabaseContract.SetEdgeEntry.COLUMN_TO_NODE_ID} = ?
-            ORDER BY n.${DatabaseContract.SetNodeEntry.COLUMN_ID} ASC
-        """
-
-        val cursor = db.rawQuery(query, arrayOf(setId.toString(), currentNodeId.toString()))
-
-        cursor.use {
+        cursor?.use {
             while (it.moveToNext()) {
                 prevNodes.add(cursorToNodeWithSong(it))
             }

@@ -60,6 +60,20 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <provider
+            android:name="hr.jkacan.setmaker.data.provider.SongsContentProvider"
+            android:authorities="hr.jkacan.setmaker.provider"
+            android:exported="false" />
+
+        <provider
+            android:name="hr.jkacan.setmaker.data.provider.SetsContentProvider"
+            android:authorities="hr.jkacan.setmaker.provider.sets"
+            android:exported="false" />
+
+        <provider
+            android:name="hr.jkacan.setmaker.data.provider.SetGraphContentProvider"
+            android:authorities="hr.jkacan.setmaker.provider.setgraph"
+            android:exported="false" />
 
     </application>
 
