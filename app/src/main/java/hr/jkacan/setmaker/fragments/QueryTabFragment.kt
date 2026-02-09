@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import hr.jkacan.setmaker.SetMakerApplication
 import hr.jkacan.setmaker.adapters.SongAdapter
@@ -104,7 +105,8 @@ class QueryTabFragment : Fragment() {
             onItemLongPress = { song -> },
             audioPreviewManager = audioPreviewManager,
             savedSongPlatformIds = emptyList(),
-            soundcloudService = scServiceOrNull
+            soundcloudService = scServiceOrNull,
+            prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
         )
 
         binding.queryResultsRecyclerView.adapter = adapter

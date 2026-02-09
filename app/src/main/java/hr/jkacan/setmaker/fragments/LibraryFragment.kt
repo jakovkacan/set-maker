@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import hr.jkacan.setmaker.adapters.SongAdapter
 import hr.jkacan.setmaker.models.song.Song
@@ -68,7 +69,8 @@ class LibraryFragment : Fragment() {
             onItemLongPress = { song -> showSongOptionsModal(song) },
             audioPreviewManager = audioPreviewManager,
             savedSongPlatformIds = null,
-            soundcloudService = scServiceOrNull
+            soundcloudService = scServiceOrNull,
+            prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
         )
 
         binding.libraryRecyclerView.adapter = adapter

@@ -1,9 +1,9 @@
 <resources>
     <!-- Base Dark Theme -->
-<!--    <style name="Theme.SetMaker.Base" parent="Theme.MaterialComponents.DayNight.NoActionBar">-->
-<!--        <item name="android:windowBackground">@color/background</item>-->
-<!--        <item name="android:textColorPrimary">@color/text_primary</item>-->
-<!--    </style>-->
+    <!--    <style name="Theme.SetMaker.Base" parent="Theme.MaterialComponents.DayNight.NoActionBar">-->
+    <!--        <item name="android:windowBackground">@color/background</item>-->
+    <!--        <item name="android:textColorPrimary">@color/text_primary</item>-->
+    <!--    </style>-->
 
     <!-- Red Theme (Default) -->
     <style name="Theme.SetMaker.Red" parent="AppTheme">
@@ -24,5 +24,19 @@
         <item name="primaryColor">@color/colorPurple</item>
         <item name="primaryDarkColor">@color/colorPurpleDark</item>
         <item name="accentColor">@color/colorPurpleAccent</item>
+    </style>
+
+    <!-- Olive Theme -->
+    <style name="Theme.SetMaker.Olive" parent="AppTheme">
+        <item name="primaryColor">@color/colorOlive</item>
+        <item name="primaryDarkColor">@color/colorOliveDark</item>
+        <item name="accentColor">@color/colorOliveAccent</item>
+    </style>
+
+    <!-- Black Theme -->
+    <style name="Theme.SetMaker.Black" parent="AppTheme">
+        <item name="primaryColor">@color/colorBlack</item>
+        <item name="primaryDarkColor">@color/colorBlackDark</item>
+        <item name="accentColor">@color/colorBlackAccent</item>
     </style>
 </resources>

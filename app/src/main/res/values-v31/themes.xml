@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ Splash Screen Theme -->
+    <style name="SplashTheme" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Set the splash screen background color to black -->
+        <item name="android:windowSplashScreenBackground">@color/background</item>
+        <!-- Set the icon background color (optional, can be transparent or black) -->
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/background</item>
+        <!-- Use the app icon for the splash screen -->
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <!-- Keep the splash screen on-screen for longer period -->
+<!--        <item name="android:windowSplashScreenAnimationDuration">1000</item>-->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+</resources>
+
+

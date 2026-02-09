@@ -1,6 +1,7 @@
 package hr.jkacan.setmaker.editor
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import hr.jkacan.setmaker.data.dao.SetGraphRepository
 import hr.jkacan.setmaker.editor.layout.GraphLayoutCalculator.computeGraphLayout
@@ -9,6 +10,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+
+class EditorViewModelFactory(
+    private val setId: Int,
+    private val setGraphRepository: SetGraphRepository
+) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(EditorViewModel::class.java)) {
+            return EditorViewModel(setId, setGraphRepository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
 
 class EditorViewModel(
     private val setId: Int,

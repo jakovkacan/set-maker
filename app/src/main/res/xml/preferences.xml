@@ -3,50 +3,32 @@
 
     <PreferenceCategory android:title="@string/general">
 
-        <SwitchPreference
-            android:key="notifications"
-            android:title="@string/enable_notifications"
-            android:summary="@string/notifications_summary"
-            android:defaultValue="true" />
-
         <ListPreference
-            android:key="theme"
-            android:title="@string/theme"
-            android:summary="@string/theme_summary"
+            android:defaultValue="red"
             android:entries="@array/theme_entries"
             android:entryValues="@array/theme_values"
-            android:defaultValue="red" />
+            android:key="theme"
+            android:summary="@string/theme_summary"
+            android:title="@string/theme" />
 
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/playback">
 
         <SeekBarPreference
+            android:defaultValue="100"
             android:key="volume"
-            android:title="@string/default_volume"
             android:max="100"
-            android:defaultValue="80" />
-
-        <SwitchPreference
-            android:key="autoplay"
-            android:title="@string/autoplay"
-            android:summary="@string/autoplay_summary"
-            android:defaultValue="false" />
+            android:title="@string/default_volume" />
 
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/library">
 
-        <SwitchPreference
-            android:key="auto_import"
-            android:title="@string/auto_import"
-            android:summary="@string/auto_import_summary"
-            android:defaultValue="true" />
-
         <Preference
-            android:key="cache_size"
-            android:title="@string/cache_size"
-            android:summary="@string/cache_size_summary" />
+            android:key="prune_unused_songs"
+            android:summary="@string/prune_unused_songs_summary"
+            android:title="@string/prune_unused_songs" />
 
     </PreferenceCategory>
 
@@ -54,12 +36,14 @@
 
         <Preference
             android:key="version"
-            android:title="@string/version"
-            android:summary="1.0.0" />
+            android:summary="1.0.0"
+            android:title="@string/version" />
 
-        <Preference
-            android:key="privacy_policy"
-            android:title="@string/privacy_policy" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="debug"
+            android:summary="@string/debug_summary"
+            android:title="@string/debug" />
 
     </PreferenceCategory>
 

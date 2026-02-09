@@ -54,10 +54,10 @@ class SongOptionsBottomSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.optionAddToSet.setOnClickListener {
-            // Add to set
-            dismiss()
-        }
+//        binding.optionAddToSet.setOnClickListener {
+//            // Add to set
+//            dismiss()
+//        }
 
         binding.optionExternalPlayer.setOnClickListener {
             song.songUrl?.let { url ->
@@ -94,9 +94,9 @@ class SongOptionsBottomSheet : BottomSheetDialogFragment() {
             dismiss()
         }
 
-        binding.optionShare.setOnClickListener {
-            dismiss()
-        }
+//        binding.optionShare.setOnClickListener {
+//            dismiss()
+//        }
 
         binding.optionDelete.setOnClickListener {
             (requireActivity().application as SetMakerApplication).songRepository.delete(song.id!!)

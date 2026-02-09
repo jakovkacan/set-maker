@@ -139,7 +139,7 @@ object GraphLayoutCalculator {
         horizontalSpacing: Float,
         verticalSpacing: Float,
     ): Offset {
-        val nodeWidth = 120f
+        val nodeWidth = NODE_WIDTH.value
 
         // Calculate horizontal position with centering
         // Center the node at canvas center, then apply column offset
@@ -167,15 +167,6 @@ object GraphLayoutCalculator {
             horizontalSpacing,
             verticalSpacing,
         )
-    }
-
-    fun screenToCanvasCoordinates(
-        screenOffset: Offset,
-        canvasState: EditorCanvasState
-    ): Offset {
-        val canvasX = (screenOffset.x - canvasState.offset.x) / canvasState.scale
-        val canvasY = (screenOffset.y - canvasState.offset.y) / canvasState.scale
-        return Offset(canvasX, canvasY)
     }
 
     fun canvasToScreenCoordinates(

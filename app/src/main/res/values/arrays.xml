@@ -3,11 +3,15 @@
         <item>Red</item>
         <item>Cyan</item>
         <item>Purple</item>
+        <item>Olive</item>
+        <item>Black</item>
     </string-array>
 
     <string-array name="theme_values">
         <item>red</item>
         <item>cyan</item>
         <item>purple</item>
+        <item>olive</item>
+        <item>black</item>
     </string-array>
 </resources>

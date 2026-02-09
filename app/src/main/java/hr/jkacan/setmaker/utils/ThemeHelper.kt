@@ -10,6 +10,8 @@ object ThemeHelper {
         when (theme) {
             "cyan" -> activity.setTheme(R.style.Theme_SetMaker_Cyan)
             "purple" -> activity.setTheme(R.style.Theme_SetMaker_Purple)
+            "olive" -> activity.setTheme(R.style.Theme_SetMaker_Olive)
+            "black" -> activity.setTheme(R.style.Theme_SetMaker_Black)
             else -> activity.setTheme(R.style.Theme_SetMaker_Red)
         }
     }

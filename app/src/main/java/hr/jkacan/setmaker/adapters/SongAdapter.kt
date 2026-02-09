@@ -1,5 +1,6 @@
 package hr.jkacan.setmaker.adapters
 
+import android.content.SharedPreferences
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
@@ -13,6 +14,7 @@ import hr.jkacan.setmaker.models.song.Song
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
 import hr.jkacan.setmaker.utils.AudioPreviewManager
+import hr.jkacan.setmaker.utils.percentageToFloat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,6 +25,7 @@ class SongAdapter(
     private val onItemClick: (Song) -> Unit,
     private val onItemLongPress: (Song) -> Unit,
     private val audioPreviewManager: AudioPreviewManager,
+    private val prefs: SharedPreferences,
     private val soundcloudService: SoundcloudService? = null
 ) : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
 
@@ -124,6 +127,8 @@ class SongAdapter(
                         null
                     }
 
+                    val volume = percentageToFloat(prefs.getInt("volume", 100))
+
                     audioPreviewManager.play(
                         url = previewUrl,
                         authToken = authToken,
@@ -136,7 +141,8 @@ class SongAdapter(
                         onComplete = {
                             binding.songCover.reset()
                             currentPlayingPosition = RecyclerView.NO_POSITION
-                        }
+                        },
+                        volume = volume
                     )
                 }
             }

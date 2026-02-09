@@ -32,7 +32,8 @@ class AudioPreviewManager(private val context: Context) {
         authToken: String? = null,
         onBuffering: (Boolean) -> Unit,
         onProgress: (Float) -> Unit,
-        onComplete: () -> Unit
+        onComplete: () -> Unit,
+        volume: Float = 1f
     ) {
         stop()
         currentUrl = url
@@ -62,6 +63,7 @@ class AudioPreviewManager(private val context: Context) {
                 playWhenReady = false
                 val mediaItem = MediaItem.fromUri(url)
                 setMediaItem(mediaItem)
+                setVolume(volume)
                 prepare()
 
                 addListener(object : Player.Listener {

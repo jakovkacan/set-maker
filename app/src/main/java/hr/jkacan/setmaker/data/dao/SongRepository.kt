@@ -228,6 +228,56 @@ class SongRepository(context: Context) : Repository<Song> {
         }
     }
 
+    /**
+     * Deletes all songs that are not part of any set.
+     * Returns the number of songs deleted.
+     */
+    fun pruneUnusedSongs(context: Context): Int {
+        val db = dbHelper.writableDatabase
+        val setGraphRepository = SetGraphRepository(context)
+
+        try {
+            // Get all song IDs
+            val allSongIds = mutableSetOf<Int>()
+            val allSongs = getAll()
+            allSongs.forEach { song ->
+                song.id?.let { allSongIds.add(it) }
+            }
+
+            // Get all song IDs that are used in sets
+            val usedSongIds = mutableSetOf<Int>()
+            val setRepository = SetRepository(context)
+            val allSets = setRepository.getAll()
+
+            allSets.forEach { set ->
+                val nodesWithSongs = setGraphRepository.getNodesWithSongsBySet(set.id!!)
+                nodesWithSongs.forEach { nodeWithSong ->
+                    usedSongIds.add(nodeWithSong.song.id!!)
+                }
+            }
+
+            // Find songs that are not used in any set
+            val unusedSongIds = allSongIds - usedSongIds
+
+            // Delete unused songs
+            var deletedCount = 0
+            unusedSongIds.forEach { songId ->
+                val deleted = delete(songId)
+                if (deleted > 0) {
+                    deletedCount++
+                }
+            }
+
+            setGraphRepository.close()
+            setRepository.close()
+
+            return deletedCount
+        } catch (e: Exception) {
+            setGraphRepository.close()
+            throw e
+        }
+    }
+
     private fun cursorToSong(cursor: Cursor): Song {
         return Song(
             id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.SongEntry.COLUMN_ID)),

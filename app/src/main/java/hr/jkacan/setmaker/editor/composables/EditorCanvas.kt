@@ -1,5 +1,6 @@
 package hr.jkacan.setmaker.editor.composables
 
+import android.content.SharedPreferences
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,7 @@ import hr.jkacan.setmaker.editor.rememberEditorCanvasState
 import hr.jkacan.setmaker.models.song.SongProvider
 import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
 import hr.jkacan.setmaker.utils.AudioPreviewManager
+import hr.jkacan.setmaker.utils.percentageToFloat
 import kotlinx.coroutines.launch
 
 @Composable
@@ -35,6 +37,7 @@ fun EditorCanvas(
     onDeleteNode: (Int) -> Unit,
     onConnectLeafToNode: (Int, Int) -> Unit,
     audioPreviewManager: AudioPreviewManager,
+    prefs: SharedPreferences,
     soundcloudService: SoundcloudService
 ) {
     when {
@@ -90,6 +93,8 @@ fun EditorCanvas(
                                 null
                             }
 
+                            val volume = percentageToFloat(prefs.getInt("volume", 100))
+
                             audioPreviewManager.play(
                                 url = previewUrl,
                                 authToken = authToken,
@@ -101,7 +106,8 @@ fun EditorCanvas(
                                 },
                                 onComplete = {
                                     canvasState.resetAudioState()
-                                }
+                                },
+                                volume = volume
                             )
                         }
                     }
@@ -264,6 +270,8 @@ fun EditorCanvas(
                                     // Check if dropped on delete zone first
                                     if (canvasState.isOverDeleteZone) {
                                         onDeleteNode(draggedId)
+                                        if (draggedId == canvasState.playingNodeId)
+                                            audioPreviewManager.stop()
                                     }
                                     // Handle drop on node (swap positions)
                                     else if (canvasState.highlightedNodeId != null) {

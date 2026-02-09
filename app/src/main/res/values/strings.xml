@@ -39,7 +39,7 @@
     <string name="theme_summary">Choose app theme</string>
 
     <string name="playback">Playback</string>
-    <string name="default_volume">Default Volume</string>
+    <string name="default_volume">Volume</string>
     <string name="autoplay">Autoplay</string>
     <string name="autoplay_summary">Automatically play next song</string>
 
@@ -82,4 +82,12 @@
     <string name="set_options">Set Options</string>
     <string name="select_song">Select a Song</string>
     <string name="toggle_debug_mode">Toggle Debug Mode</string>
+    <string name="debug">Enable debug mode</string>
+    <string name="debug_summary">Adds a debug menu to set editor</string>
+    <string name="prune_unused_songs">Prune unused songs</string>
+    <string name="prune_unused_songs_summary">Delete all songs which are not found in any set</string>
+    <string name="prune_unused_songs_confirmation">Are you sure you want to delete all songs that are not in any set? This action cannot be undone.</string>
+    <string name="cancel">Cancel</string>
+    <string name="deleted_unused_songs">Deleted %1$d unused song(s)</string>
+    <string name="error_pruning_songs">Error pruning songs: %1$s</string>
 </resources>

@@ -15,17 +15,17 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/option_add_to_set"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:drawablePadding="16dp"
-        android:padding="16dp"
-        android:text="@string/add_to_set"
-        android:textColor="@color/text_primary"
-        android:textSize="16sp"
-        app:drawableStartCompat="@drawable/ic_add" />
+<!--    <TextView-->
+<!--        android:id="@+id/option_add_to_set"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:background="?attr/selectableItemBackground"-->
+<!--        android:drawablePadding="16dp"-->
+<!--        android:padding="16dp"-->
+<!--        android:text="@string/add_to_set"-->
+<!--        android:textColor="@color/text_primary"-->
+<!--        android:textSize="16sp"-->
+<!--        app:drawableStartCompat="@drawable/ic_add" />-->
 
     <TextView
         android:id="@+id/option_external_player"
@@ -39,17 +39,17 @@
         android:textSize="16sp"
         app:drawableStartCompat="@drawable/ic_play" />
 
-    <TextView
-        android:id="@+id/option_share"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:drawablePadding="16dp"
-        android:padding="16dp"
-        android:text="@string/share"
-        android:textColor="@color/text_primary"
-        android:textSize="16sp"
-        app:drawableStartCompat="@drawable/ic_share" />
+<!--    <TextView-->
+<!--        android:id="@+id/option_share"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:background="?attr/selectableItemBackground"-->
+<!--        android:drawablePadding="16dp"-->
+<!--        android:padding="16dp"-->
+<!--        android:text="@string/share"-->
+<!--        android:textColor="@color/text_primary"-->
+<!--        android:textSize="16sp"-->
+<!--        app:drawableStartCompat="@drawable/ic_share" />-->
 
     <TextView
         android:id="@+id/option_delete"

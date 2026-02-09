@@ -1,6 +1,8 @@
 package hr.jkacan.setmaker.activities
 
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.collectAsState
@@ -9,21 +11,31 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.preference.PreferenceManager
 import hr.jkacan.setmaker.R
+import hr.jkacan.setmaker.SetMakerApplication
+import hr.jkacan.setmaker.data.dao.SetGraphRepository
 import hr.jkacan.setmaker.databinding.ActivityEditorBinding
 import hr.jkacan.setmaker.editor.EditorViewModel
+import hr.jkacan.setmaker.editor.EditorViewModelFactory
 import hr.jkacan.setmaker.editor.composables.EditorCanvas
+import hr.jkacan.setmaker.fragments.SongPickerBottomSheet
+import hr.jkacan.setmaker.models.song.Song
+import hr.jkacan.setmaker.services.soundcloud.SoundcloudService
+import hr.jkacan.setmaker.utils.AudioPreviewManager
 import hr.jkacan.setmaker.utils.ThemeHelper
 
 class EditorActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditorBinding
-    private lateinit var setGraphRepository: hr.jkacan.setmaker.data.dao.SetGraphRepository
-    private lateinit var audioPreviewManager: hr.jkacan.setmaker.utils.AudioPreviewManager
-    private lateinit var soundcloudService: hr.jkacan.setmaker.services.soundcloud.SoundcloudService
+    private lateinit var prefs: SharedPreferences
+    private lateinit var setGraphRepository: SetGraphRepository
+    private lateinit var audioPreviewManager: AudioPreviewManager
+    private lateinit var soundcloudService: SoundcloudService
     private var currentSetId: Int = -1
     private val viewModel: EditorViewModel by viewModels {
         EditorViewModelFactory(currentSetId, setGraphRepository)
@@ -38,7 +50,20 @@ class EditorActivity : AppCompatActivity() {
         binding = ActivityEditorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Get repositories from application
+        val application = application as SetMakerApplication
+        setGraphRepository = application.setGraphRepository
+        audioPreviewManager = application.audioPreviewManager
+        soundcloudService = application.soundcloudService
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+        // Get set information from intent
+        currentSetId = intent.getIntExtra("SET_ID", -1)
+        val setName = intent.getStringExtra("SET_NAME")
+
         // Set up the toolbar
+        binding.toolbar.inflateMenu(R.menu.menu_editor)
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         ViewCompat.setOnApplyWindowInsetsListener(binding.toolbar) { view, windowInsets ->
@@ -46,17 +71,6 @@ class EditorActivity : AppCompatActivity() {
             view.updatePadding(top = insets.top)
             windowInsets
         }
-
-        // Get repositories from application
-        val application = application as hr.jkacan.setmaker.SetMakerApplication
-        setGraphRepository = application.setGraphRepository
-        audioPreviewManager = application.audioPreviewManager
-        soundcloudService = application.soundcloudService
-
-        // Get set information from intent
-        currentSetId = intent.getIntExtra("SET_ID", -1)
-        val setName = intent.getStringExtra("SET_NAME")
-
         supportActionBar?.title = setName
 
         if (currentSetId == -1) {
@@ -69,7 +83,8 @@ class EditorActivity : AppCompatActivity() {
     }
 
     private fun showSongPicker(fromNodeId: Int, toNodeId: Int?) {
-        val songPicker = hr.jkacan.setmaker.fragments.SongPickerBottomSheet.newInstance()
+        val insertedSongIds = getAllInsertedSongs().mapNotNull { it.platformId }
+        val songPicker = SongPickerBottomSheet.newInstance(insertedSongIds)
         songPicker.onSongSelected = { song ->
             viewModel.addNode(song, fromNodeId, toNodeId)
         }
@@ -77,7 +92,8 @@ class EditorActivity : AppCompatActivity() {
     }
 
     private fun showSongPickerForBranch(fromNodeId: Int) {
-        val songPicker = hr.jkacan.setmaker.fragments.SongPickerBottomSheet.newInstance()
+        val insertedSongIds = getAllInsertedSongs().mapNotNull { it.platformId }
+        val songPicker = SongPickerBottomSheet.newInstance(insertedSongIds)
         songPicker.onSongSelected = { song ->
             viewModel.addBranchNode(song, fromNodeId)
         }
@@ -85,7 +101,7 @@ class EditorActivity : AppCompatActivity() {
     }
 
     private fun showSongPickerForFirstNode() {
-        val songPicker = hr.jkacan.setmaker.fragments.SongPickerBottomSheet.newInstance()
+        val songPicker = SongPickerBottomSheet.newInstance()
         songPicker.onSongSelected = { song ->
             viewModel.addFirstNode(song)
         }
@@ -105,7 +121,8 @@ class EditorActivity : AppCompatActivity() {
                 onDeleteNode = viewModel::deleteNode,
                 onConnectLeafToNode = viewModel::connectLeafToNode,
                 audioPreviewManager = audioPreviewManager,
-                soundcloudService = soundcloudService
+                soundcloudService = soundcloudService,
+                prefs = prefs
             )
 
             // Update FAB visibility based on graph state
@@ -145,10 +162,13 @@ class EditorActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: android.view.Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_editor, menu)
+        // Hide menu items when debug is disabled
+        val enableDebug = prefs.getBoolean("debug", false)
+        menu?.setGroupVisible(0, enableDebug)
         return true
     }
 
-    override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_toggle_debug -> {
                 debugMode = !debugMode
@@ -159,20 +179,9 @@ class EditorActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
-}
 
-class EditorViewModelFactory(
-    private val setId: Int,
-    private val setGraphRepository: hr.jkacan.setmaker.data.dao.SetGraphRepository
-) : ViewModelProvider.Factory {
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(EditorViewModel::class.java)) {
-            return EditorViewModel(setId, setGraphRepository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
+    private fun getAllInsertedSongs(): List<Song> {
+        val allNodes = setGraphRepository.getNodesWithSongsBySet(currentSetId)
+        return allNodes.map { it.song }.distinct()
     }
 }
-
-
-

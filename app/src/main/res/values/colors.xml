@@ -12,6 +12,14 @@
     <color name="colorPurpleDark">#39254a</color>
     <color name="colorPurpleAccent">#975a79</color>
 
+    <color name="colorOlive">#574d2d</color>
+    <color name="colorOliveDark">#3e3624</color>
+    <color name="colorOliveAccent">#6b6140</color>
+
+    <color name="colorBlack">#212529</color>
+    <color name="colorBlackDark">#212529</color>
+    <color name="colorBlackAccent">#343a40</color>
+
     <color name="colorSpotify">#1ED760</color>
     <color name="colorSoundCloud">#FF5500</color>
     <color name="colorLocalFiles">@color/darkGray</color>

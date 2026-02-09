@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import hr.jkacan.setmaker.editor.layout.NODE_WIDTH
 
 @Composable
 fun rememberEditorCanvasState(): EditorCanvasState {
@@ -16,7 +17,7 @@ fun rememberEditorCanvasState(): EditorCanvasState {
 class EditorCanvasState {
     // Transform state
     var scale by mutableFloatStateOf(1f)
-    var offset by mutableStateOf(Offset.Zero)
+    var offset by mutableStateOf(Offset(-NODE_WIDTH.value, 0f))
 
     var centerX by mutableFloatStateOf(0f)
     var centerY by mutableFloatStateOf(0f)
