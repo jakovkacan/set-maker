@@ -61,7 +61,7 @@ class SetsFragment : Fragment() {
 
         binding.setsRecyclerView.layoutManager = GridLayoutManager(context, 2)
 
-        val setsList = setRepository.getAll()
+        val setsList = setRepository.getAll().sortedByDescending { it.dateAdded }
 
         updateEmptyState(setsList)
 
@@ -110,7 +110,7 @@ class SetsFragment : Fragment() {
     }
 
     private fun refreshSets() {
-        val updatedSets = setRepository.getAll()
+        val updatedSets = setRepository.getAll().sortedByDescending { it.dateAdded }
         adapter.updateSets(updatedSets)
         updateEmptyState(updatedSets)
     }

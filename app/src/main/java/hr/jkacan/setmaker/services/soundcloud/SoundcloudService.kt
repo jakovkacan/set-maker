@@ -59,7 +59,8 @@ class SoundcloudService {
             coroutineScope {
                 response.mapIndexed { index, dto ->
                     async {
-                        val preview = fetchPreviewUrl(dto.streamUrl + 's')
+                        val preview = dto.streamUrl
+//                        val preview = fetchPreviewUrl(dto.streamUrl + 's')
                         val artist = if (dto.metadataArtist?.isNotBlank()
                                 ?: false
                         ) dto.metadataArtist else dto.user.username
